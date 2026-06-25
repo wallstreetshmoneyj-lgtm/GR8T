@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GR8T · Strategy Backtester</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='lightweight-charts.js') }}"></script>
+  <script>
+    // fall back to the CDN if the vendored library is unavailable
+    if (!window.LightweightCharts) {
+      document.write('<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"><\/script>');
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <div class="brand">GR8T <span>backtester</span></div>
+    <div class="tagline">trend · point of interest · entry</div>
+  </header>
+
+  <div class="layout">
+    <aside class="controls">
+      <form id="cfg">
+        <label>Symbol
+          <input name="symbol" id="symbol" value="SPY" list="symlist" autocomplete="off">
+          <datalist id="symlist"></datalist>
+        </label>
+        <label>History (base 5m)
+          <select name="period">
+            <option value="30d">30 days</option>
+            <option value="60d" selected>60 days</option>
+          </select>
+        </label>
+
+        <fieldset>
+          <legend>Trend</legend>
+          <label>SMA period <input type="number" name="sma_period" value="50" min="5" max="200"></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Point of interest</legend>
+          <label class="row"><input type="checkbox" name="require_same_color" checked> 3 same-color candles</label>
+          <label class="row"><input type="checkbox" name="require_mtf" checked> multi-timeframe nesting</label>
+          <label>Volume-profile bins <input type="number" name="vp_bins" value="48" min="10" max="120"></label>
+          <label>Swing lookback <input type="number" name="swing_lookback" value="5" min="2" max="20"></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Risk model</legend>
+          <label>ATR period <input type="number" name="atr_period" value="14" min="2" max="50"></label>
+          <label>ATR trail × <input type="number" step="0.1" name="atr_mult" value="1.0" min="0.2" max="5"></label>
+          <label>Break-even at (R) <input type="number" step="0.1" name="breakeven_at_r" value="1.0" min="0.2" max="5"></label>
+          <label>Stop placement
+            <select name="stop_mode">
+              <option value="poi" selected>POI edge</option>
+              <option value="signal">Signal candle</option>
+            </select>
+          </label>
+          <label>Stop buffer (ATR) <input type="number" step="0.05" name="stop_buffer_atr" value="0.1" min="0" max="2"></label>
+          <label>Risk / trade (%) <input type="number" step="0.1" name="risk_per_trade_pct" value="1.0" min="0.1" max="10"></label>
+        </fieldset>
+
+        <label class="row"><input type="checkbox" name="synthetic"> use offline synthetic data</label>
+        <button type="submit" id="run">Run backtest</button>
+        <div id="status" class="status"></div>
+      </form>
+    </aside>
+
+    <main>
+      <section class="panel">
+        <div class="panel-head">
+          <h2 id="chart-title">—</h2>
+          <div id="meta" class="meta"></div>
+        </div>
+        <div id="chart"></div>
+        <div class="legend">
+          <span class="lg sma">— 50 SMA</span>
+          <span class="lg up">▲ long entry</span>
+          <span class="lg dn">▼ short entry</span>
+          <span class="lg ex">● exit (R)</span>
+          <span class="lg poi">▢ selected POI / POC (click a trade)</span>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <div class="panel">
+          <h3>Performance</h3>
+          <div id="stats" class="stats">Run a backtest to see results.</div>
+        </div>
+        <div class="panel">
+          <h3>Equity curve</h3>
+          <div id="equity"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>Trades <span id="tcount" class="muted"></span></h3>
+        <div class="table-wrap">
+          <table id="trades">
+            <thead><tr>
+              <th>#</th><th>Entry</th><th>Dir</th><th>Pattern</th><th>POI TF</th>
+              <th>Entry</th><th>Stop</th><th>Exit</th><th>R</th><th>Why</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# fetched market data cache
+data_cache/
+*.parquet
+
+# backtest artifacts
+runs/
+*.log
+.DS_Store
+
+# auto-vendored at first launch
+webui/static/lightweight-charts.js
