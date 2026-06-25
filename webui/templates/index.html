@@ -26,10 +26,10 @@
           <input name="symbol" id="symbol" value="SPY" list="symlist" autocomplete="off">
           <datalist id="symlist"></datalist>
         </label>
-        <label>History (base 5m)
-          <select name="period">
-            <option value="30d">30 days</option>
-            <option value="60d" selected>60 days</option>
+        <label>Mode &amp; history
+          <select name="preset" id="preset">
+            <option value="intraday" selected>Intraday · 5m/15m/1h · ~60d</option>
+            <option value="swing">Swing · 1h/4h/1d · ~2y</option>
           </select>
         </label>
 
@@ -63,6 +63,7 @@
 
         <label class="row"><input type="checkbox" name="synthetic"> use offline synthetic data</label>
         <button type="submit" id="run">Run backtest</button>
+        <button type="button" id="download" class="secondary">⬇ Download HTML report</button>
         <div id="status" class="status"></div>
       </form>
     </aside>
@@ -83,15 +84,14 @@
         </div>
       </section>
 
-      <section class="grid2">
-        <div class="panel">
-          <h3>Performance</h3>
-          <div id="stats" class="stats">Run a backtest to see results.</div>
-        </div>
-        <div class="panel">
-          <h3>Equity curve</h3>
-          <div id="equity"></div>
-        </div>
+      <section class="panel" id="visual-panel">
+        <h3>Visual stats</h3>
+        <div id="visual" class="visual">Run a backtest to see results.</div>
+      </section>
+
+      <section class="panel">
+        <h3>Performance detail</h3>
+        <div id="stats" class="stats">Run a backtest to see results.</div>
       </section>
 
       <section class="panel">

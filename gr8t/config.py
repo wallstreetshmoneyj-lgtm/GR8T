@@ -6,7 +6,7 @@ to/from a dict (the web UI sends params as JSON) and stored alongside results.
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict, fields
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 
 
 @dataclass
@@ -83,3 +83,19 @@ class Config:
     def tf_order(self) -> list[str]:
         """Timeframes from highest to lowest."""
         return [self.high_tf, self.mid_tf, self.base_tf]
+
+    # Timeframe presets. The strategy logic is identical at every scale; only the
+    # base timeframe (and therefore how much history Yahoo will serve) changes.
+    PRESETS: ClassVar[dict[str, dict[str, Any]]] = {
+        # the real intraday strategy — Yahoo caps 5m at ~60 days
+        "intraday": dict(base_tf="5min", mid_tf="15min", high_tf="60min", period="60d"),
+        # same rules scaled up — ~2 years of history on the 1h base
+        "swing": dict(base_tf="60min", mid_tf="4h", high_tf="1D", period="730d"),
+    }
+
+    @classmethod
+    def preset(cls, name: str, **overrides: Any) -> "Config":
+        if name not in cls.PRESETS:
+            raise ValueError(f"unknown preset {name!r}; choose from {list(cls.PRESETS)}")
+        params = {**cls.PRESETS[name], **overrides}
+        return cls(**params)

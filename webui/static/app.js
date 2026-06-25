@@ -10,7 +10,7 @@ const CHART_OPTS = {
   crosshair: { mode: LWC.CrosshairMode.Normal },
 };
 
-let priceChart, candle, smaLine, eqChart, eqLine;
+let priceChart, candle, smaLine;
 let poiLines = [];
 let lastTrades = [];
 
@@ -23,15 +23,8 @@ function initCharts() {
   });
   smaLine = priceChart.addLineSeries({ color: '#d29922', lineWidth: 2, priceLineVisible: false, lastValueVisible: false });
 
-  const eEl = $('#equity');
-  eqChart = LWC.createChart(eEl, { ...CHART_OPTS, width: eEl.clientWidth, height: 220 });
-  eqLine = eqChart.addAreaSeries({
-    lineColor: '#58a6ff', topColor: 'rgba(88,166,255,.35)', bottomColor: 'rgba(88,166,255,0)', lineWidth: 2,
-  });
-
   new ResizeObserver(() => {
     priceChart.applyOptions({ width: cEl.clientWidth });
-    eqChart.applyOptions({ width: eEl.clientWidth });
   }).observe(document.body);
 }
 
@@ -79,12 +72,15 @@ function render(d) {
   candle.setMarkers(d.markers);
   priceChart.timeScale().fitContent();
 
-  eqLine.setData(d.equity.length ? d.equity : [{ time: d.bars[0].time, value: d.stats.starting_equity }]);
-  eqChart.timeScale().fitContent();
+  $('#visual').innerHTML = d.charts_html || '<div class="muted">no chart data</div>';
 
-  $('#chart-title').textContent = `${d.symbol} · ${d.sma_period} SMA`;
+  const c = d.config || {};
+  const tf = (x) => ({ '5min': '5m', '15min': '15m', '30min': '30m', '60min': '1h',
+                       '4h': '4h', '1D': '1d', '1d': '1d' }[x] || x);
+  $('#chart-title').textContent = `${d.symbol} · ${tf(c.base_tf)} · ${d.sma_period} SMA`;
   $('#meta').textContent =
-    `${d.meta.start} → ${d.meta.end} · ${d.meta.n_base} 5m / ${d.meta.n_mid} 15m / ${d.meta.n_high} 1h`;
+    `${d.meta.start} → ${d.meta.end} · ${d.meta.n_base} ${tf(c.base_tf)} / ` +
+    `${d.meta.n_mid} ${tf(c.mid_tf)} / ${d.meta.n_high} ${tf(c.high_tf)}`;
 
   renderStats(d.stats);
   renderTrades(d.trades);
@@ -167,6 +163,34 @@ function selectTrade(i, rowEl) {
   }
 }
 
+async function downloadReport() {
+  const btn = $('#download');
+  btn.disabled = true;
+  const old = btn.textContent;
+  btn.textContent = 'Building report…';
+  try {
+    const res = await fetch('/api/report', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(gatherParams()),
+    });
+    if (!res.ok) throw new Error('report failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gr8t_${$('#symbol').value || 'report'}.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    $('#status').textContent = '⚠ ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+
 async function loadSymbols() {
   try {
     const r = await fetch('/api/symbols');
@@ -179,5 +203,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initCharts();
   loadSymbols();
   $('#cfg').addEventListener('submit', run);
+  $('#download').addEventListener('click', downloadReport);
   run();  // auto-run once on load
 });

@@ -76,6 +76,72 @@ def compute_stats(trades: list[Trade], cfg: Config) -> dict[str, Any]:
     }
 
 
+def stats_series(trades: list[Trade], cfg: Config) -> dict[str, Any]:
+    """Derived series for charts: equity, drawdown, cumulative R, per-trade R,
+    an R-multiple histogram and monthly R totals."""
+    import pandas as pd
+
+    if not trades:
+        return {"equity": [], "drawdown": [], "cum_r": [], "per_trade": [],
+                "histogram": {"edges": [], "counts": [], "colors": []},
+                "monthly": []}
+
+    r = np.array([t.r_multiple - cfg.cost_per_trade_r for t in trades], dtype=float)
+    cum_r = np.cumsum(r)
+
+    equity = [cfg.starting_equity]
+    eq = cfg.starting_equity
+    for x in r:
+        eq *= (1.0 + cfg.risk_per_trade * x)
+        equity.append(eq)
+    equity = np.array(equity)
+    peaks = np.maximum.accumulate(equity)
+    dd_pct = (equity / peaks - 1.0) * 100.0
+
+    per_trade = []
+    for i, t in enumerate(trades):
+        per_trade.append({
+            "n": i + 1,
+            "r": round(float(r[i]), 3),
+            "direction": t.direction,
+            "pattern": t.pattern,
+            "exit_time": (pd.Timestamp(t.exit_time).strftime("%Y-%m-%d %H:%M")
+                          if t.exit_time is not None else ""),
+        })
+
+    # R-multiple histogram (fixed 0.5R buckets spanning the observed range)
+    lo = float(np.floor(r.min() * 2) / 2)
+    hi = float(np.ceil(r.max() * 2) / 2)
+    edges = np.arange(lo, hi + 0.5, 0.5)
+    if len(edges) < 2:
+        edges = np.array([lo, lo + 0.5])
+    counts, _ = np.histogram(r, bins=edges)
+    colors = ["#1f9d55" if (edges[i] + edges[i + 1]) / 2 >= 0 else "#e3342f"
+              for i in range(len(counts))]
+
+    # monthly R totals
+    monthly: dict[str, float] = {}
+    for i, t in enumerate(trades):
+        if t.exit_time is None:
+            continue
+        key = pd.Timestamp(t.exit_time).strftime("%Y-%m")
+        monthly[key] = monthly.get(key, 0.0) + float(r[i])
+    monthly_list = [{"month": k, "r": round(v, 2)} for k, v in sorted(monthly.items())]
+
+    return {
+        "equity": [round(float(x), 2) for x in equity],
+        "drawdown": [round(float(x), 2) for x in dd_pct],
+        "cum_r": [round(float(x), 3) for x in cum_r],
+        "per_trade": per_trade,
+        "histogram": {
+            "edges": [round(float(x), 2) for x in edges],
+            "counts": [int(c) for c in counts],
+            "colors": colors,
+        },
+        "monthly": monthly_list,
+    }
+
+
 def format_stats(stats: dict[str, Any]) -> str:
     if stats.get("trades", 0) == 0:
         return "No trades were generated for these parameters."

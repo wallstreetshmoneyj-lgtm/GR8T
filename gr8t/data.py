@@ -88,7 +88,8 @@ def load_base(cfg, *, use_cache: bool = True, offline: bool = False) -> pd.DataF
         if age < 3600:  # 1h freshness
             return pd.read_parquet(cache)
     interval = _tf_to_yahoo(cfg.base_tf)
-    df = fetch_yahoo(cfg.symbol, interval=interval, rng=cfg.period)
+    rng = _clamp_range(interval, cfg.period)
+    df = fetch_yahoo(cfg.symbol, interval=interval, rng=rng)
     try:
         df.to_parquet(cache)
     except Exception:  # parquet engine optional
@@ -97,8 +98,26 @@ def load_base(cfg, *, use_cache: bool = True, offline: bool = False) -> pd.DataF
 
 
 def _tf_to_yahoo(tf: str) -> str:
-    return {"5min": "5m", "15min": "15m", "60min": "1h", "30min": "30m",
-            "1h": "1h"}.get(tf, "5m")
+    return {"5min": "5m", "15min": "15m", "30min": "30m",
+            "60min": "1h", "1h": "1h",
+            "1D": "1d", "1d": "1d", "1day": "1d", "1wk": "1wk", "1W": "1wk"}.get(tf, "5m")
+
+
+# Yahoo's history limit per base interval (the binding constraint on a run).
+_MAX_RANGE_DAYS = {"5m": 60, "15m": 60, "30m": 60, "1h": 730, "1d": 100 * 365,
+                   "1wk": 100 * 365}
+
+
+def _clamp_range(interval: str, period: str) -> str:
+    """Cap the requested period to what Yahoo will serve for this interval."""
+    cap = _MAX_RANGE_DAYS.get(interval)
+    if cap is None or not period.endswith("d"):
+        return period
+    try:
+        days = int(period[:-1])
+    except ValueError:
+        return period
+    return f"{min(days, cap)}d"
 
 
 # ---------------------------------------------------------------------------

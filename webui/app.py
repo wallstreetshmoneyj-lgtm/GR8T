@@ -23,6 +23,7 @@ from gr8t.data import load_base, synthetic_series, resample
 from gr8t.indicators import sma
 from gr8t.backtest import Backtester
 from gr8t.stats import compute_stats
+from gr8t.report import build_fragment
 
 app = Flask(__name__)
 
@@ -155,6 +156,7 @@ def build_payload(cfg: Config, base: pd.DataFrame, source: str) -> dict:
         "trades": trades,
         "equity": equity,
         "stats": stats,
+        "charts_html": build_fragment(result, cfg, include_table=False),
         "meta": {
             "n_base": len(base),
             "n_mid": len(resample(base, cfg.mid_tf)),
@@ -181,30 +183,67 @@ def symbols():
     return jsonify(SUGGESTED)
 
 
+@app.route("/api/presets")
+def presets():
+    return jsonify(list(Config.PRESETS))
+
+
+def _cfg_from_params(params: dict) -> Config:
+    """Build a Config, honouring a timeframe preset when given. Preset fixes the
+    timeframes + period; the other tunables from the form overlay on top."""
+    preset = params.get("preset")
+    if preset in Config.PRESETS:
+        cfg = Config.preset(preset)
+        fixed = {"base_tf", "mid_tf", "high_tf", "period", "preset"}
+        overlay = {k: v for k, v in params.items() if k not in fixed}
+        return Config.from_dict({**cfg.to_dict(), **overlay})
+    return Config.from_dict(params)
+
+
+def _load(cfg: Config, params: dict):
+    """Return (base_df, source). Falls back to synthetic data on fetch failure."""
+    if bool(params.get("synthetic")):
+        cfg.symbol = "SYNTH"
+        return synthetic_series(n=1500), "synthetic"
+    try:
+        return load_base(cfg), "yahoo"
+    except Exception as e:  # noqa: BLE001
+        cfg.symbol = "SYNTH"
+        return synthetic_series(n=1500), f"synthetic (live fetch failed: {e})"
+
+
 @app.route("/api/backtest", methods=["POST"])
 def backtest():
     try:
         params = request.get_json(force=True) or {}
-        cfg = Config.from_dict(params)
-        use_synth = bool(params.get("synthetic"))
-        source = "synthetic"
-        if use_synth:
-            base = synthetic_series(n=1500)
-            cfg.symbol = "SYNTH"
-        else:
-            try:
-                base = load_base(cfg)
-                source = "yahoo"
-            except Exception as e:  # noqa: BLE001
-                base = synthetic_series(n=1500)
-                cfg.symbol = "SYNTH"
-                source = f"synthetic (live fetch failed: {e})"
+        cfg = _cfg_from_params(params)
+        base, source = _load(cfg, params)
         payload = build_payload(cfg, base, source)
         payload["config"] = cfg.to_dict()
         return jsonify(payload)
     except Exception as e:  # noqa: BLE001
         traceback.print_exc()
         return jsonify({"ok": False, "error": str(e)}), 400
+
+
+@app.route("/api/report", methods=["POST"])
+def report():
+    """Return a self-contained HTML report as a file download."""
+    from flask import Response
+    from gr8t.report import build_report
+    from gr8t.backtest import Backtester
+    params = request.get_json(force=True) or {}
+    cfg = _cfg_from_params(params)
+    base, source = _load(cfg, params)
+    result = Backtester(base, cfg).run()
+    result.set_exit_times()
+    meta = {"start": pd.Timestamp(base.index[0]).strftime("%Y-%m-%d"),
+            "end": pd.Timestamp(base.index[-1]).strftime("%Y-%m-%d"),
+            "n_base": len(base)}
+    html_doc = build_report(result, cfg, source=source, meta=meta)
+    fname = f"gr8t_{cfg.symbol}_{cfg.base_tf}.html".replace("=", "").replace("^", "")
+    return Response(html_doc, mimetype="text/html",
+                    headers={"Content-Disposition": f'attachment; filename="{fname}"'})
 
 
 if __name__ == "__main__":

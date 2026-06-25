@@ -163,3 +163,40 @@ def test_full_backtest_runs_on_synthetic():
     result = Backtester(base, cfg).run()
     # the engine should complete and every trade have a finite R
     assert all(np.isfinite(t.r_multiple) for t in result.trades)
+
+
+# --------------------------- presets / history ---------------------------
+def test_swing_preset_timeframes():
+    cfg = Config.preset("swing", symbol="QQQ")
+    assert (cfg.base_tf, cfg.mid_tf, cfg.high_tf) == ("60min", "4h", "1D")
+    assert cfg.period == "730d" and cfg.symbol == "QQQ"
+
+
+def test_clamp_range_caps_intraday():
+    from gr8t.data import _clamp_range
+    assert _clamp_range("5m", "730d") == "60d"      # 5m capped at 60d
+    assert _clamp_range("1h", "730d") == "730d"     # 1h allows 2y
+    assert _clamp_range("1d", "5000d") == "5000d"
+
+
+# --------------------------- visual stats / report ---------------------------
+def test_stats_series_and_report():
+    from gr8t.stats import stats_series
+    from gr8t.report import build_report, build_fragment
+    cfg = Config(symbol="SYNTH")
+    base = synthetic_series(n=1500, seed=11)
+    result = Backtester(base, cfg).run()
+    result.set_exit_times()
+
+    series = stats_series(result.trades, cfg)
+    for key in ("equity", "drawdown", "per_trade", "histogram", "monthly"):
+        assert key in series
+    # equity has one more point than trades (starting equity seed)
+    assert len(series["equity"]) == len(result.trades) + 1
+
+    html_doc = build_report(result, cfg, source="synthetic",
+                            meta={"start": "2024-01-02", "end": "2024-01-09", "n_base": len(base)})
+    assert html_doc.startswith("<!DOCTYPE html>")
+    if result.trades:
+        assert "<svg" in html_doc
+        assert "chart-svg" in build_fragment(result, cfg, include_table=False)

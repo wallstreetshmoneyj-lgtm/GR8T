@@ -70,17 +70,39 @@ stop fill at the bar open.
 pip install -r requirements.txt
 
 # command-line backtest
-python -m gr8t.cli --symbol SPY --period 60d
-python -m gr8t.cli --symbol NQ=F --period 30d --atr-mult 1.5 --stop-mode signal
-python -m gr8t.cli --synthetic          # offline, deterministic demo
+python -m gr8t.cli --symbol SPY --preset intraday     # 5m/15m/1h, ~60 days
+python -m gr8t.cli --symbol SPY --preset swing        # 1h/4h/1d, ~2 years
+python -m gr8t.cli --symbol NQ=F --preset swing --atr-mult 1.5 --stop-mode signal
+python -m gr8t.cli --symbol SPY --preset swing --report spy.html   # visual report
+python -m gr8t.cli --synthetic                        # offline, deterministic demo
 
 # web UI  ->  http://127.0.0.1:5000
 python webui/run.py
 ```
 
-Data comes from Yahoo Finance via a dependency-light `requests` client (works
-through an HTTPS proxy). Fetches are cached for an hour under `data_cache/`.
-Yahoo caps 5m history at ~60 days, which is the binding limit for a run.
+### Historical depth (presets)
+
+The strategy logic is identical at every scale; only the base timeframe — and
+therefore how much history Yahoo will serve — changes:
+
+| Preset     | Timeframes    | History  | Use                                 |
+| :--------- | :------------ | :------- | :---------------------------------- |
+| `intraday` | 5m / 15m / 1h | ~60 days | the real intraday strategy          |
+| `swing`    | 1h / 4h / 1d  | ~2 years | same rules, multi-year track record |
+
+Yahoo caps 5m history at ~60 days, so `intraday` is the deepest the real
+strategy goes on the free feed; `swing` runs the same rules on an hourly base
+for a ~2-year backtest. Requested ranges are auto-clamped to what each interval
+allows. Data comes from a dependency-light Yahoo `requests` client (proxy-
+friendly), cached for an hour under `data_cache/`.
+
+### Visual report
+
+`--report PATH` (CLI) or the **Download HTML report** button (web UI) writes a
+self-contained dashboard — stat cards, equity curve, underwater drawdown,
+per-trade R, R-multiple distribution, monthly R, and the full trade ledger — as
+a single HTML file with no JavaScript or external dependencies, so it opens and
+shares anywhere.
 
 Good symbols to try: `SPY`, `QQQ`, `ES=F`, `NQ=F`, `AAPL`, `NVDA`. Futures and
 single stocks carry real volume (so the POC tie-breaker is active); cash indices
@@ -90,11 +112,15 @@ like `^GSPC` do not.
 
 ## Web UI
 
-- Edit any parameter in the left panel and **Run backtest**.
+- Pick a **mode** (`intraday` or `swing`) and a symbol, tune any parameter, and
+  **Run backtest**.
 - The chart shows candles, the 50 SMA, and ▲/▼ entry + ● exit markers.
 - **Click any row** in the trades table to draw that trade's POI zone, entry,
   stop, exit, and POC, and zoom the chart to it.
-- The performance panel and equity curve update on every run.
+- The **Visual stats** panel (equity, drawdown, per-trade R, R distribution,
+  monthly R) and the performance detail update on every run.
+- **Download HTML report** saves the self-contained dashboard for the current
+  settings.
 
 ---
 

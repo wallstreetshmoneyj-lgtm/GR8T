@@ -38,18 +38,32 @@ def main(argv=None) -> int:
     p.add_argument("--risk-per-trade", type=float, dest="risk_per_trade")
     p.add_argument("--stop-mode", choices=["poi", "signal"], dest="stop_mode")
     p.add_argument("--no-mtf", action="store_true", help="disable multi-TF requirement")
+    p.add_argument("--preset", choices=list(Config.PRESETS),
+                   help="timeframe preset: intraday (5m/15m/1h, 60d) or swing (1h/4h/1d, ~2y)")
+    p.add_argument("--report", metavar="PATH", help="write a visual HTML report")
     p.add_argument("--synthetic", action="store_true", help="use offline synthetic data")
     p.add_argument("--offline", action="store_true", help="use cached data only")
     p.add_argument("--json", action="store_true", help="emit stats as JSON")
     args = p.parse_args(argv)
 
-    cfg = build_config(args)
+    if args.preset:
+        base = Config.preset(args.preset)
+        for k, v in vars(args).items():
+            key = k.replace("-", "_")
+            if v is not None and hasattr(base, key) and key not in (
+                    "base_tf", "mid_tf", "high_tf", "period"):
+                setattr(base, key, v)
+        cfg = base
+    else:
+        cfg = build_config(args)
     if args.no_mtf:
         cfg.require_mtf = False
 
+    source = "yahoo"
     if args.synthetic:
         base = synthetic_series(n=1500)
         cfg.symbol = "SYNTH"
+        source = "synthetic"
     else:
         try:
             base = load_base(cfg, offline=args.offline)
@@ -57,10 +71,19 @@ def main(argv=None) -> int:
             print(f"Data load failed ({e}); falling back to --synthetic.", file=sys.stderr)
             base = synthetic_series(n=1500)
             cfg.symbol = "SYNTH"
+            source = "synthetic"
 
     result = Backtester(base, cfg).run()
     result.set_exit_times()
     stats = compute_stats(result.trades, cfg)
+
+    if args.report:
+        from .report import build_report
+        meta = {"start": base.index[0].date(), "end": base.index[-1].date(),
+                "n_base": len(base)}
+        with open(args.report, "w") as f:
+            f.write(build_report(result, cfg, source=source, meta=meta))
+        print(f"Wrote visual report -> {args.report}")
 
     if args.json:
         print(json.dumps(stats, indent=2, default=str))
