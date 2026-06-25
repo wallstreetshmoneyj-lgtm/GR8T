@@ -56,24 +56,38 @@ def _aligned_to_base(base_index: pd.DatetimeIndex, htf: pd.DataFrame, tf: str,
     return pd.Series(merged["tr"].to_numpy(), index=base_index).fillna("none")
 
 
+# which base-relative timeframes each named trend definition uses, and whether
+# every member must agree ('all') or a simple majority ('majority').
+TREND_DEFS: dict[str, tuple[tuple[str, ...], str]] = {
+    "base": (("base",), "all"),
+    "mid": (("mid",), "all"),
+    "high": (("high",), "all"),
+    "mid_high": (("mid", "high"), "all"),       # 15m + 1h, drop the noisy 5m
+    "all3": (("base", "mid", "high"), "all"),
+    "2of3": (("base", "mid", "high"), "majority"),
+}
+
+
 def states(base: pd.DataFrame, cfg: Config, kind: str, strictness: str) -> pd.Series:
-    """Per-base-bar trend state ('bull'/'bear'/'none').
+    """Per-base-bar trend state ('bull'/'bear'/'none') for a named trend
+    definition (see TREND_DEFS): which timeframes participate and whether they
+    must all agree or just a majority."""
+    members, rule = TREND_DEFS[strictness]
+    tr = {}
+    if "base" in members:
+        tr["base"] = _tf_trend(base, cfg.sma_period, kind)
+    if "mid" in members:
+        mid = resample(base, cfg.mid_tf)
+        tr["mid"] = _aligned_to_base(base.index, mid, cfg.mid_tf, cfg.sma_period, kind).to_numpy()
+    if "high" in members:
+        high = resample(base, cfg.high_tf)
+        tr["high"] = _aligned_to_base(base.index, high, cfg.high_tf, cfg.sma_period, kind).to_numpy()
 
-    strictness: 'all3' (every timeframe agrees), '2of3' (majority), or
-    'high' (the highest timeframe alone)."""
-    mid = resample(base, cfg.mid_tf)
-    high = resample(base, cfg.high_tf)
-    tb = _tf_trend(base, cfg.sma_period, kind)            # base TF, at its own close
-    tm = _aligned_to_base(base.index, mid, cfg.mid_tf, cfg.sma_period, kind).to_numpy()
-    th = _aligned_to_base(base.index, high, cfg.high_tf, cfg.sma_period, kind).to_numpy()
-
-    if strictness == "high":
-        out = th
-    else:
-        bull = (tb == "bull").astype(int) + (tm == "bull").astype(int) + (th == "bull").astype(int)
-        bear = (tb == "bear").astype(int) + (tm == "bear").astype(int) + (th == "bear").astype(int)
-        need = 3 if strictness == "all3" else 2
-        out = np.where(bull >= need, "bull", np.where(bear >= need, "bear", "none"))
+    arrs = [tr[m] for m in members]
+    bull = sum((a == "bull").astype(int) for a in arrs)
+    bear = sum((a == "bear").astype(int) for a in arrs)
+    need = len(members) if rule == "all" else (len(members) // 2 + 1)
+    out = np.where(bull >= need, "bull", np.where(bear >= need, "bear", "none"))
     return pd.Series(out, index=base.index)
 
 
@@ -425,6 +439,136 @@ def build_persistence_report(summaries: list[dict], runs_by_kind: dict,
                         subtitle=subtitle, body=body)
 
 
+# --------------------------------------------------------------------------- #
+# trend-definition comparison (with news split)
+# --------------------------------------------------------------------------- #
+def crossover_events(base: pd.DataFrame, cfg: Config, kind: str, strictness: str):
+    """List of {len, start, dir} for every full crossover of a trend definition."""
+    s = states(base, cfg, kind, strictness).to_numpy()
+    n = len(s)
+    out, prev = [], None
+    for i in range(n):
+        cur = s[i]
+        if cur in ("bull", "bear") and cur != prev:
+            j = i
+            while j < n and s[j] == cur:
+                j += 1
+            out.append({"len": j - i, "start": i, "dir": cur})
+        prev = cur
+    return out, s
+
+
+def _cont_edge(close: pd.Series, s: np.ndarray, h: int, mask: np.ndarray) -> float:
+    """Drift-adjusted continuation edge (pp) within a subset of bars: how much
+    more often the aligned direction continues over horizon h than the subset's
+    own baseline up/down rate."""
+    fwd = forward_return(close, h)
+    valid = (~np.isnan(fwd)) & mask
+    if valid.sum() < 50:
+        return float("nan")
+    base_up = float((fwd[valid] > 0).mean())
+    bull = (s == "bull") & valid
+    bear = (s == "bear") & valid
+    nb, ns = int(bull.sum()), int(bear.sum())
+    if nb + ns < 50:
+        return float("nan")
+    hits = np.concatenate([(fwd[bull] > 0), (fwd[bear] < 0)])
+    base_cont = (base_up * nb + (1 - base_up) * ns) / (nb + ns)
+    return (hits.mean() - base_cont) * 100
+
+
+def compare_trend_defs(base: pd.DataFrame, cfg: Config, news: pd.Series,
+                       defs=("all3", "mid_high", "high", "mid"),
+                       kinds=("sma", "ema")) -> list[dict]:
+    bm = bar_duration(cfg.base_tf).total_seconds() / 60.0
+    news_arr = news.to_numpy().astype(bool)
+    close = base["close"]
+    h1d = max(1, round(_bars_per_day(cfg.base_tf)))
+    rows = []
+    for strict in defs:
+        for kind in kinds:
+            ev, s = crossover_events(base, cfg, kind, strict)
+            lens = np.array([e["len"] for e in ev], dtype=float)
+            in_news = np.array([news_arr[e["start"]] for e in ev], dtype=bool)
+            med = lambda x: float(np.median(x)) if len(x) else float("nan")
+            p6 = lambda x: float((x <= 6).mean() * 100) if len(x) else float("nan")
+            rows.append({
+                "def": strict, "kind": kind.upper(), "events": len(ev),
+                "all_med": med(lens), "all_p6": p6(lens),
+                "quiet_med": med(lens[~in_news]), "quiet_p6": p6(lens[~in_news]),
+                "news_med": med(lens[in_news]), "news_p6": p6(lens[in_news]),
+                "pct_in_news": float(in_news.mean() * 100) if len(ev) else 0.0,
+                "pct_time": float(np.isin(s, ["bull", "bear"]).mean() * 100),
+                "edge_all": _cont_edge(close, s, h1d, np.ones(len(s), bool)),
+                "edge_quiet": _cont_edge(close, s, h1d, ~news_arr),
+                "edge_news": _cont_edge(close, s, h1d, news_arr),
+                "bar_min": bm,
+            })
+    return rows
+
+
+def format_compare(rows: list[dict], cfg: Config, news_share: float) -> str:
+    bm = rows[0]["bar_min"]
+    dur = lambda b: _fmt_dur(b, bm)
+    lines = [f"  news coverage: {news_share:.1f}% of bars flagged (vol-shock + release clock)\n"]
+    hdr = (f"  {'trend def':9} {'MA':4} {'events':>6} {'%time':>6}  "
+           f"{'medHold':>7} {'≤30m':>5}  {'quietHold':>9} {'q≤30m':>6}  {'newsHold':>8} {'n≤30m':>6}  "
+           f"{'%inNews':>7}  {'edgeAll':>7} {'edgeQuiet':>9} {'edgeNews':>8}")
+    lines.append(hdr)
+    lines.append("  " + "-" * (len(hdr) - 2))
+    for r in rows:
+        lines.append(
+            f"  {r['def']:9} {r['kind']:4} {r['events']:6d} {r['pct_time']:5.1f}%  "
+            f"{dur(r['all_med']):>7} {r['all_p6']:4.0f}%  "
+            f"{dur(r['quiet_med']):>9} {r['quiet_p6']:5.0f}%  "
+            f"{dur(r['news_med']):>8} {r['news_p6']:5.0f}%  "
+            f"{r['pct_in_news']:6.0f}%  "
+            f"{r['edge_all']:+6.1f} {r['edge_quiet']:+8.1f} {r['edge_news']:+7.1f}")
+    legend = (
+        "\n  medHold = median time the aligned state holds after a full crossover\n"
+        "  ≤30m    = share of crossovers that un-align within 30 min (whipsaw)\n"
+        "  quiet/news = same, split by whether the crossover starts in a news window\n"
+        "  %inNews = share of crossovers starting in a news window\n"
+        "  edge* = drift-adjusted 1-day continuation edge (pp), within all/quiet/news bars\n"
+        "  trend defs: all3=5m+15m+1h  mid_high=15m+1h  high=1h  mid=15m")
+    return "\n".join(lines) + "\n" + legend
+
+
+def build_compare_report(rows: list[dict], cfg: Config, meta: dict, source: str,
+                         news_share: float) -> str:
+    from .report import _svg_bars, _PAGE, _card
+    labels = [f"{r['def']}/{r['kind']}" for r in rows]
+    bm = rows[0]["bar_min"]
+    med_h = [round(r["all_med"] * bm / 60, 2) for r in rows]          # hours
+    whip = [round(r["all_p6"], 1) for r in rows]
+    edge = [round(r["edge_all"], 2) for r in rows]
+    cards = []
+    # headline: best (longest median hold) non-all3 def
+    best = max(rows, key=lambda r: (r["all_med"] if r["def"] != "all3" else -1))
+    a3 = next((r for r in rows if r["def"] == "all3" and r["kind"] == "SMA"), rows[0])
+    cards.append(_card("all3 SMA median hold", _fmt_dur(a3["all_med"], bm), "neg"))
+    cards.append(_card(f"{best['def']} {best['kind']} median hold",
+                       _fmt_dur(best["all_med"], bm), "pos"))
+    cards.append(_card("news coverage", f"{news_share:.0f}% of bars"))
+    cards.append(_card("all3 whipsaw ≤30m", f"{a3['all_p6']:.0f}%", "neg"))
+    sections = [
+        ("Median hold after full crossover (hours) — higher = more durable",
+         _svg_bars(med_h, ["#58a6ff"] * len(med_h), labels=labels, fmt="{:.1f}", label_every=1)),
+        ("Whipsaw: % of crossovers gone within 30 min — lower = better",
+         _svg_bars(whip, ["#e3342f"] * len(whip), labels=labels, fmt="{:.0f}", label_every=1)),
+        ("Drift-adjusted 1-day continuation edge, pp",
+         _svg_bars(edge, ["#1f9d55" if x >= 0 else "#e3342f" for x in edge],
+                   labels=labels, fmt="{:+.0f}", label_every=1)),
+    ]
+    charts = "".join(f'<section class="panel"><h3>{t}</h3>{svg}</section>' for t, svg in sections)
+    tfs = f"{cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf}"
+    subtitle = (f"trend-definition comparison (news-split) · {tfs} · "
+                f"{meta.get('start','?')} → {meta.get('end','?')} · {meta.get('n_base','?')} bars · {source}")
+    return _PAGE.format(title=f"{cfg.symbol} · trend comparison",
+                        subtitle=subtitle,
+                        body=f'<section class="cards">{"".join(cards)}</section>{charts}')
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="Trend-filter predictiveness study")
     p.add_argument("--symbol", default="ES=F")
@@ -433,6 +577,8 @@ def main(argv=None) -> int:
     p.add_argument("--report", metavar="PATH")
     p.add_argument("--persistence", action="store_true",
                    help="measure how long the all-3 aligned state holds after a full crossover")
+    p.add_argument("--compare", action="store_true",
+                   help="compare trend definitions (all3/15m+1h/1h/15m) with a news split")
     p.add_argument("--synthetic", action="store_true")
     args = p.parse_args(argv)
 
@@ -457,6 +603,20 @@ def main(argv=None) -> int:
     meta = {"start": base.index[0].date(), "end": base.index[-1].date(), "n_base": len(base)}
     header = (f"\n{cfg.symbol} · {cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf} "
               f"· {meta['start']} → {meta['end']} · {len(base)} bars · {cfg.sma_period}-period MA")
+
+    if args.compare:
+        from .news import news_mask
+        news = news_mask(base)
+        rows = compare_trend_defs(base, cfg, news)
+        share = float(news.mean() * 100)
+        print(header + "\nTrend-definition comparison (news-split)")
+        print("=" * 132)
+        print(format_compare(rows, cfg, share))
+        if args.report:
+            with open(args.report, "w") as f:
+                f.write(build_compare_report(rows, cfg, meta, source, share))
+            print(f"\nWrote visual comparison -> {args.report}")
+        return 0
 
     if args.persistence:
         summaries, runs_by_kind = [], {}
