@@ -110,6 +110,78 @@ def _whipsaw(state: pd.Series) -> dict:
     return {"flips": flips, "median_run": float(np.median(runs)) if runs else 0.0}
 
 
+# --------------------------------------------------------------------------- #
+# crossover persistence: when all 3 TFs fully align, how long does it hold?
+# --------------------------------------------------------------------------- #
+def crossover_runs(base: pd.DataFrame, cfg: Config, kind: str):
+    """Find every 'full crossover' (the bar all three timeframes first agree)
+    and measure how many consecutive bars the aligned state holds before it
+    breaks. Returns {'bull': [...], 'bear': [...]} run lengths plus, for each
+    run, whether it ended by flipping to the opposite side or just decaying to
+    mixed, and a right-censored flag for a run still open at the data end."""
+    s = states(base, cfg, kind, "all3").to_numpy()
+    n = len(s)
+    runs = {"bull": [], "bear": []}
+    ends = {"bull": {"flip": 0, "mixed": 0, "open": 0},
+            "bear": {"flip": 0, "mixed": 0, "open": 0}}
+    prev = None
+    for i in range(n):
+        cur = s[i]
+        if cur in ("bull", "bear") and cur != prev:        # a fresh full crossover
+            j = i
+            while j < n and s[j] == cur:
+                j += 1
+            runs[cur].append(j - i)
+            opp = "bear" if cur == "bull" else "bull"
+            if j >= n:
+                ends[cur]["open"] += 1
+            elif s[j] == opp:
+                ends[cur]["flip"] += 1
+            else:
+                ends[cur]["mixed"] += 1
+        prev = cur
+    return runs, ends
+
+
+def _pct(arr, q):
+    return float(np.percentile(arr, q)) if len(arr) else float("nan")
+
+
+def persistence_summary(base: pd.DataFrame, cfg: Config, kind: str) -> dict:
+    runs, ends = crossover_runs(base, cfg, kind)
+    bar_min = bar_duration(cfg.base_tf).total_seconds() / 60.0
+    out = {"kind": kind.upper(), "bar_min": bar_min}
+    for d in ("bull", "bear"):
+        r = np.array(runs[d], dtype=float)
+        e = ends[d]
+        tot = max(int(r.sum()), 0)
+        out[d] = {
+            "events": len(r),
+            "median": float(np.median(r)) if r.size else 0.0,
+            "mean": float(r.mean()) if r.size else 0.0,
+            "p25": _pct(r, 25), "p75": _pct(r, 75), "p90": _pct(r, 90),
+            "max": float(r.max()) if r.size else 0.0,
+            # whipsaw share: aligned state lost within ~30 min and ~1h
+            "pct_le_6": float((r <= 6).mean() * 100) if r.size else 0.0,
+            "pct_le_12": float((r <= 12).mean() * 100) if r.size else 0.0,
+            "pct_ge_78": float((r >= 78).mean() * 100) if r.size else 0.0,  # >= ~1 day
+            "flip": e["flip"], "mixed": e["mixed"], "open": e["open"],
+            "bars_total": tot,
+        }
+    return out
+
+
+_RUN_BUCKETS = [(0, 6, "≤30m"), (6, 12, "30-60m"), (12, 24, "1-2h"),
+                (24, 48, "2-4h"), (48, 78, "4h-1d"), (78, 234, "1-3d"),
+                (234, 10**9, ">3d")]
+
+
+def _bucket_counts(run_lengths):
+    r = np.array(run_lengths, dtype=float)
+    return [int(((r > lo) & (r <= hi)).sum()) if i else int((r <= hi).sum())
+            for i, (lo, hi, _) in enumerate(_RUN_BUCKETS)]
+
+
 @dataclass
 class Row:
     kind: str
@@ -278,12 +350,89 @@ def build_study_report(rows: list[Row], cfg: Config, meta: dict, source: str) ->
     return _PAGE.format(title=f"{cfg.symbol} · trend study", subtitle=subtitle, body=body)
 
 
+# --------------------------------------------------------------------------- #
+# persistence output
+# --------------------------------------------------------------------------- #
+def _fmt_dur(bars: float, bar_min: float) -> str:
+    mins = bars * bar_min
+    if mins < 60:
+        return f"{mins:.0f}m"
+    if mins < 60 * 24:
+        return f"{mins/60:.1f}h"
+    return f"{mins/60/24:.1f}d"
+
+
+def format_persistence(summaries: list[dict], cfg: Config) -> str:
+    bm = summaries[0]["bar_min"]
+    lines = []
+    for d in ("bull", "bear"):
+        lines.append(f"\n  Full {d.upper()} crossover — how long the all-3 aligned state holds")
+        hdr = (f"  {'MA':4} {'events':>6} {'median':>8} {'mean':>8} {'p75':>8} {'p90':>8} "
+               f"{'max':>8}  {'≤30m':>6} {'≥1d':>6}  {'flip%':>6} {'mix%':>6} {'%time':>6}")
+        lines.append(hdr)
+        lines.append("  " + "-" * (len(hdr) - 2))
+        for s in summaries:
+            x = s[d]
+            n_end = max(x["flip"] + x["mixed"] + x["open"], 1)
+            pct_time = x["bars_total"]  # filled below as %
+            lines.append(
+                f"  {s['kind']:4} {x['events']:6d} "
+                f"{_fmt_dur(x['median'], bm):>8} {_fmt_dur(x['mean'], bm):>8} "
+                f"{_fmt_dur(x['p75'], bm):>8} {_fmt_dur(x['p90'], bm):>8} {_fmt_dur(x['max'], bm):>8}  "
+                f"{x['pct_le_6']:5.0f}% {x['pct_ge_78']:5.0f}%  "
+                f"{x['flip']/n_end*100:5.0f}% {x['mixed']/n_end*100:5.0f}% "
+                f"{x['_pct_time']:5.1f}%")
+        lines.append("")
+    legend = ("  median/mean/p75/p90/max = duration the aligned state holds after a full crossover\n"
+              "  ≤30m = share of crossovers that un-align within 30 min (whipsaw)\n"
+              "  ≥1d  = share that hold at least one trading day\n"
+              "  flip%/mix% = how the run ends (flips to opposite vs decays to mixed)\n"
+              "  %time = share of all bars spent in that aligned state")
+    return "\n".join(lines) + "\n" + legend
+
+
+def build_persistence_report(summaries: list[dict], runs_by_kind: dict,
+                             cfg: Config, meta: dict, source: str) -> str:
+    from .report import _svg_bars, _PAGE, _card
+
+    bm = summaries[0]["bar_min"]
+    cards = []
+    for s in summaries:
+        for d in ("bull", "bear"):
+            x = s[d]
+            cards.append(_card(f"{s['kind']} {d} median hold",
+                               _fmt_dur(x["median"], bm),
+                               "neg" if x["pct_le_6"] >= 40 else ""))
+    cards_html = "".join(cards)
+
+    labels = [f"{lo//1}-{hi if hi < 10**8 else '∞'}" for (lo, hi, lbl) in _RUN_BUCKETS]
+    labels = [lbl for (_, _, lbl) in _RUN_BUCKETS]
+    sections = []
+    for d in ("bull", "bear"):
+        for kind in ("sma", "ema"):
+            counts = _bucket_counts(runs_by_kind[kind][d])
+            col = ["#1f9d55" if d == "bull" else "#e3342f"] * len(counts)
+            sections.append((f"{kind.upper()} · {d} crossover hold-time distribution",
+                             _svg_bars([float(c) for c in counts], col,
+                                       labels=labels, fmt="{:.0f}", label_every=1)))
+    charts_html = "".join(f'<section class="panel"><h3>{t}</h3>{svg}</section>'
+                          for t, svg in sections)
+    tfs = f"{cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf}"
+    subtitle = (f"full-crossover persistence · {tfs} · {meta.get('start','?')} → "
+                f"{meta.get('end','?')} · {meta.get('n_base','?')} bars · {source}")
+    body = f'<section class="cards">{cards_html}</section>{charts_html}'
+    return _PAGE.format(title=f"{cfg.symbol} · crossover persistence",
+                        subtitle=subtitle, body=body)
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="Trend-filter predictiveness study")
     p.add_argument("--symbol", default="ES=F")
     p.add_argument("--preset", choices=list(Config.PRESETS), default="swing")
     p.add_argument("--sma-period", type=int, dest="sma_period")
     p.add_argument("--report", metavar="PATH")
+    p.add_argument("--persistence", action="store_true",
+                   help="measure how long the all-3 aligned state holds after a full crossover")
     p.add_argument("--synthetic", action="store_true")
     args = p.parse_args(argv)
 
@@ -305,13 +454,32 @@ def main(argv=None) -> int:
             cfg.symbol = "SYNTH"
             source = "synthetic"
 
-    rows = run_study(base, cfg)
     meta = {"start": base.index[0].date(), "end": base.index[-1].date(), "n_base": len(base)}
-    print(f"\nTrend study — {cfg.symbol} · {cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf} "
-          f"· {meta['start']} → {meta['end']} · {len(base)} bars · {cfg.sma_period}-period MA")
+    header = (f"\n{cfg.symbol} · {cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf} "
+              f"· {meta['start']} → {meta['end']} · {len(base)} bars · {cfg.sma_period}-period MA")
+
+    if args.persistence:
+        summaries, runs_by_kind = [], {}
+        for kind in ("sma", "ema"):
+            s = persistence_summary(base, cfg, kind)
+            for d in ("bull", "bear"):
+                s[d]["_pct_time"] = s[d]["bars_total"] / len(base) * 100
+            summaries.append(s)
+            runs, _ = crossover_runs(base, cfg, kind)
+            runs_by_kind[kind] = runs
+        print(header + "\nFull-crossover persistence — all three timeframes aligned")
+        print("=" * 104)
+        print(format_persistence(summaries, cfg))
+        if args.report:
+            with open(args.report, "w") as f:
+                f.write(build_persistence_report(summaries, runs_by_kind, cfg, meta, source))
+            print(f"\nWrote visual persistence report -> {args.report}")
+        return 0
+
+    rows = run_study(base, cfg)
+    print(header.replace("\n", "\nTrend study — ", 1))
     print("=" * 120)
     print(format_table(rows, cfg))
-
     if args.report:
         with open(args.report, "w") as f:
             f.write(build_study_report(rows, cfg, meta, source))
