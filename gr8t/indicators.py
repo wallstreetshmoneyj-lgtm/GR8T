@@ -17,6 +17,15 @@ def sma(close: pd.Series, period: int) -> pd.Series:
     return close.rolling(period, min_periods=period).mean()
 
 
+def ema(close: pd.Series, period: int) -> pd.Series:
+    """Exponential moving average (span convention, no warm-up bias)."""
+    return close.ewm(span=period, adjust=False, min_periods=period).mean()
+
+
+def moving_average(close: pd.Series, period: int, kind: str = "sma") -> pd.Series:
+    return ema(close, period) if kind.lower() == "ema" else sma(close, period)
+
+
 def true_range(df: pd.DataFrame) -> pd.Series:
     prev_close = df["close"].shift(1)
     tr = pd.concat(
