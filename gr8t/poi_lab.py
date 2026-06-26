@@ -29,6 +29,28 @@ from .data import load_base, synthetic_series
 from .backtest import Backtester, Trade
 from .strategy import Signal
 from .stats import compute_stats
+from .patterns import (is_bullish_engulfing, is_bearish_engulfing,
+                       is_hammer, is_shooting_star)
+
+
+def _precompute_patterns(o, h, l, c, cfg):
+    """Per-bar trend-aligned candle pattern (name or None), computed once from
+    arrays so the lab stays fast. Each pattern only uses bars up to and
+    including its own bar -> no look-ahead."""
+    n = len(o)
+    bull = np.empty(n, dtype=object); bull[:] = None
+    bear = np.empty(n, dtype=object); bear[:] = None
+    wr, bm, om = cfg.wick_body_ratio, cfg.body_max_frac, cfg.opp_wick_max_frac
+    for i in range(1, n):
+        if is_bullish_engulfing(o, h, l, c, i):
+            bull[i] = "bullish_engulfing"
+        elif is_hammer(o, h, l, c, i, wr, bm, om):
+            bull[i] = "hammer"
+        if is_bearish_engulfing(o, h, l, c, i):
+            bear[i] = "bearish_engulfing"
+        elif is_shooting_star(o, h, l, c, i, wr, bm, om):
+            bear[i] = "shooting_star"
+    return bull, bear
 
 
 def trend_series(strat, mode: str) -> np.ndarray:
@@ -42,9 +64,15 @@ def trend_series(strat, mode: str) -> np.ndarray:
                     np.where((t15 == "bear") & (t1 == "bear"), "bear", "none"))
 
 
-def run_poi_lab(base: pd.DataFrame, cfg: Config, trend_mode: str):
+def run_poi_lab(base: pd.DataFrame, cfg: Config, trend_mode: str,
+                entry_mode: str = "touch"):
     """Return (trades, backtester). Each trade carries .same_color, .multi_tf,
-    .gap_atr, .poi_tf tags."""
+    .gap_atr, .poi_tf and .pattern tags.
+
+    entry_mode='touch'  : enter the moment price taps the zone (experiment 1).
+    entry_mode='pattern': enter only when a trend-aligned 5m candle pattern
+                          (engulfing / hammer / shooting-star) closes while
+                          touching or inside the zone (experiment 2)."""
     cfg.require_same_color = False        # take every gap
     bt = Backtester(base, cfg)
     strat = bt.strategy
@@ -57,6 +85,10 @@ def run_poi_lab(base: pd.DataFrame, cfg: Config, trend_mode: str):
     atr_arr = strat.atr.to_numpy(float)
     n = len(base)
     imbs = strat.imbalances
+
+    bull_pat = bear_pat = None
+    if entry_mode == "pattern":
+        bull_pat, bear_pat = _precompute_patterns(o, h, l, c, cfg)
 
     # per-timeframe arrays for fast multi-TF overlap checks (same direction only)
     by_tf: dict[str, list] = {}
@@ -74,15 +106,35 @@ def run_poi_lab(base: pd.DataFrame, cfg: Config, trend_mode: str):
         inv = min(imb._meta["invalid_from"], n)
         if start >= inv:
             continue
-        seg_l, seg_h, seg_t = l[start:inv], h[start:inv], trend[start:inv]
-        cond = (seg_l <= imb.upper) & (seg_h >= imb.lower) & (seg_t == d)
-        if not cond.any():
-            continue
-        touch = start + int(cond.argmax())
-
         near = imb.upper if d == "bull" else imb.lower
         far = imb.lower if d == "bull" else imb.upper
-        a = atr_arr[touch]
+
+        # candidate bars: price overlaps the zone AND the trend is pro
+        seg_l, seg_h, seg_t = l[start:inv], h[start:inv], trend[start:inv]
+        touch_cond = (seg_l <= imb.upper) & (seg_h >= imb.lower) & (seg_t == d)
+        if not touch_cond.any():
+            continue
+        cand = np.nonzero(touch_cond)[0] + start
+
+        if entry_mode == "touch":
+            entry_idx = int(cand[0])
+            entry_price = near
+            pat_name = "touch"
+        else:
+            pat_arr = bull_pat if d == "bull" else bear_pat
+            entry_idx = None
+            for gi in cand:                     # first pattern-while-touching
+                pn = pat_arr[gi]
+                if pn is None:
+                    continue
+                ep = c[gi]                      # enter at the pattern's close
+                if (d == "bull" and ep > far) or (d == "bear" and ep < far):
+                    entry_idx, entry_price, pat_name = int(gi), float(ep), pn
+                    break
+            if entry_idx is None:
+                continue
+
+        a = atr_arr[entry_idx]
         gap_atr = (imb.upper - imb.lower) / a if (np.isfinite(a) and a > 0) else None
 
         # multi-timeframe: overlaps a confirmed SAME-DIRECTION imbalance on
@@ -91,23 +143,24 @@ def run_poi_lab(base: pd.DataFrame, cfg: Config, trend_mode: str):
         for tf2, (lows, ups, us, dirs) in tf_arr.items():
             if tf2 == imb.tf:
                 continue
-            if ((imb.lower < ups) & (lows < imb.upper) & (us <= touch) & (dirs == d)).any():
+            if ((imb.lower < ups) & (lows < imb.upper) & (us <= entry_idx) & (dirs == d)).any():
                 mtf = True
                 break
 
-        # blow-through: the tap bar wicks clean through to the far edge -> -1R
-        if (d == "bull" and l[touch] <= far) or (d == "bear" and h[touch] >= far):
-            tr = Trade(direction=d, entry_index=touch, entry_time=base.index[touch],
+        # touch-mode blow-through: the tap bar wicks clean through the far edge
+        if (entry_mode == "touch"
+                and ((d == "bull" and l[entry_idx] <= far) or (d == "bear" and h[entry_idx] >= far))):
+            tr = Trade(direction=d, entry_index=entry_idx, entry_time=base.index[entry_idx],
                        entry_price=near, init_stop=far, risk=abs(near - far),
                        pattern="touch", poi_tf=imb.tf)
-            tr.exit_index = touch
+            tr.exit_index = entry_idx
             tr.exit_price = far
             tr.exit_reason = "blew_through"
             tr.r_multiple = -1.0
             tr.bars_held = 0
         else:
-            sig = Signal(index=touch, time=base.index[touch], direction=d,
-                         entry_price=near, pattern="touch", poi=imb, nested_tf=imb.tf)
+            sig = Signal(index=entry_idx, time=base.index[entry_idx], direction=d,
+                         entry_price=entry_price, pattern=pat_name, poi=imb, nested_tf=imb.tf)
             tr = bt._simulate(sig, far, o=o, h=h, l=l, c=c, atr_arr=atr_arr, n=n)
 
         tr.same_color = imb.same_color          # type: ignore[attr-defined]
@@ -136,13 +189,37 @@ def _gap_bucket(t) -> Optional[str]:
     return ">2"
 
 
+PATTERNS = ["bullish_engulfing", "hammer", "bearish_engulfing", "shooting_star", "touch"]
+
 SEGMENTS = {
     "POI timeframe": (lambda t: t.poi_tf, ["60min", "15min", "5min"]),
+    "Candle pattern": (lambda t: t.pattern, PATTERNS),
     "Same colour?": (lambda t: "same" if t.same_color else "mixed", ["same", "mixed"]),
     "Multi-timeframe?": (lambda t: "multi-TF" if t.multi_tf else "single-TF", ["multi-TF", "single-TF"]),
     "Direction": (lambda t: t.direction, ["bull", "bear"]),
     "Gap size (ATR)": (_gap_bucket, ["<0.5", "0.5-1", "1-2", ">2"]),
 }
+
+
+def crosstab(trades, cfg, key1, order1, key2, order2):
+    """rows (key1) x cols (key2) -> (expectancy, n) cells, only computing cells
+    with enough trades to mean something."""
+    cells = {}
+    for k1 in order1:
+        for k2 in order2:
+            sub = [t for t in trades if key1(t) == k1 and key2(t) == k2]
+            cells[(k1, k2)] = (compute_stats(sub, cfg)["expectancy_r"], len(sub)) if sub else (None, 0)
+    return cells
+
+
+def format_crosstab(title, cells, order1, order2) -> str:
+    lines = [f"\n  {title}  (expectancy R / n)"]
+    lines.append("    " + " " * 18 + "".join(f"{k2:>18}" for k2 in order2))
+    for k1 in order1:
+        row = [f"{(f'{e:+.3f}/{nn}' if e is not None else '—'):>18}"
+               for (e, nn) in (cells[(k1, k2)] for k2 in order2)]
+        lines.append(f"    {k1:18}" + "".join(row))
+    return "\n".join(lines)
 
 
 def segment(trades, cfg: Config, keyfn, order):
@@ -200,6 +277,17 @@ def format_lab(trades, cfg: Config, trend_mode: str, meta: dict) -> str:
             s = grid[(sc, mt)]
             cells.append(f"{s['expectancy_r']:+.3f}/{s['trades']}" if s.get("trades") else "—/0")
         lines.append(f"    {sc:10} {cells[0]:>16} {cells[1]:>16}")
+
+    # pattern interactions (only meaningful once an entry pattern is required)
+    if any(t.pattern != "touch" for t in trades):
+        pats = [p for p in PATTERNS if p != "touch"]
+        for title, k2, o2 in [
+            ("pattern x POI timeframe", lambda t: t.poi_tf, ["60min", "15min", "5min"]),
+            ("pattern x same-colour", lambda t: "same" if t.same_color else "mixed", ["same", "mixed"]),
+            ("pattern x multi-TF", lambda t: "multi-TF" if t.multi_tf else "single-TF", ["multi-TF", "single-TF"]),
+        ]:
+            lines.append(format_crosstab(title, crosstab(trades, cfg, lambda t: t.pattern, pats, k2, o2),
+                                         pats, o2))
     return "\n".join(lines)
 
 
@@ -254,12 +342,71 @@ def build_lab_report(results: dict, cfg: Config, meta: dict, source: str) -> str
             f"<th>PF</th><th>total R</th><th>avgW/L</th></tr></thead>"
             f"<tbody>{''.join(trs)}</tbody></table></div></section>")
 
+    # refined-stack panels (net of 0.5pt slippage) — the punchline
+    refined_html = ""
+    if any(t.pattern != "touch" for mode_trades in results.values() for t in mode_trades):
+        eng = lambda t: t.pattern in ("bullish_engulfing", "bearish_engulfing")
+        stacks = [
+            ("engulfing only", lambda t: eng(t)),
+            ("+ same-colour", lambda t: eng(t) and t.same_color),
+            ("+ single-TF", lambda t: eng(t) and not t.multi_tf),
+            ("+ gap 0.5-1 ATR", lambda t: eng(t) and _gap_bucket(t) == "0.5-1"),
+            ("+ same + gap 0.5-1", lambda t: eng(t) and t.same_color and _gap_bucket(t) == "0.5-1"),
+        ]
+        for mode, trades in results.items():
+            lbl = "1h only" if mode == "high" else "1h + 15m"
+            rows = []
+            for name, f in stacks:
+                ts = [t for t in trades if f(t)]
+                e0, n = _exp_cost(ts, 0.0)
+                e5, _ = _exp_cost(ts, 0.5)
+                c0 = "pos" if e0 > 0 else "neg"
+                c5 = "pos" if e5 > 0 else "neg"
+                rows.append(f"<tr><td class='l'>{name}</td><td>{n}</td>"
+                            f"<td class='{c0}'>{e0:+.3f}</td><td class='{c5}'>{e5:+.3f}</td></tr>")
+            refined_html += (
+                f"<section class='panel'><h3>Refined filter stack — trend {lbl} "
+                f"(net of 0.5pt slippage)</h3><div class='tw'><table><thead><tr>"
+                f"<th class='l'>filter</th><th>n</th><th>exp@0</th><th>exp@0.5pt</th>"
+                f"</tr></thead><tbody>{''.join(rows)}</tbody></table></div></section>")
+
     tfs = f"{cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf}"
-    subtitle = (f"POI lab · every gap, touch-entry pro-trend, stop=far edge, ATR trail · "
+    entry_lbl = "5m pattern entry" if meta.get("entry") == "pattern" else "touch entry"
+    subtitle = (f"POI lab · every gap, {entry_lbl} pro-trend, stop=far edge, ATR trail · "
                 f"{tfs} · {meta.get('start','?')} → {meta.get('end','?')} · "
                 f"{meta.get('n_base','?')} bars · {source}")
-    body = f"<section class='cards'>{cards_html}</section>{charts}{''.join(tables)}"
+    body = f"<section class='cards'>{cards_html}</section>{charts}{refined_html}{''.join(tables)}"
     return _PAGE.format(title=f"{cfg.symbol} · POI lab", subtitle=subtitle, body=body)
+
+
+def _exp_cost(ts, pts):
+    if not ts:
+        return float("nan"), 0
+    r = np.array([t.r_multiple for t in ts], dtype=float)
+    risk = np.array([t.risk for t in ts], dtype=float)
+    adj = r - np.where(risk > 0, pts / risk, 0.0)
+    return float(adj.mean()), len(ts)
+
+
+def refined(trades, cfg) -> str:
+    """Stack the properties that looked best one-way and re-measure, net of a
+    realistic 0.5-pt round-trip slippage, to see if a real edge survives."""
+    eng = lambda t: t.pattern in ("bullish_engulfing", "bearish_engulfing")
+    filters = [
+        ("engulfing only", lambda t: eng(t)),
+        ("engulfing + same-colour", lambda t: eng(t) and t.same_color),
+        ("engulfing + single-TF", lambda t: eng(t) and not t.multi_tf),
+        ("engulfing + gap 0.5-1 ATR", lambda t: eng(t) and _gap_bucket(t) == "0.5-1"),
+        ("engulfing + same + gap 0.5-1", lambda t: eng(t) and t.same_color and _gap_bucket(t) == "0.5-1"),
+        ("engulfing + same + single-TF", lambda t: eng(t) and t.same_color and not t.multi_tf),
+    ]
+    lines = ["  Refined filter stack — expectancy@0 / @0.5pt cost / n  (watch small n!)"]
+    for name, f in filters:
+        ts = [t for t in trades if f(t)]
+        e0, n = _exp_cost(ts, 0.0)
+        e5, _ = _exp_cost(ts, 0.5)
+        lines.append(f"    {name:32} {e0:+.3f} / {e5:+.3f} / {n}")
+    return "\n".join(lines)
 
 
 def cost_robustness(trades, levels=(0.0, 0.25, 0.5, 0.75, 1.0)) -> str:
@@ -301,6 +448,8 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="POI laboratory (experiment 1)")
     p.add_argument("--symbol", default="ES=F")
     p.add_argument("--preset", choices=list(Config.PRESETS), default="intraday")
+    p.add_argument("--entry", choices=["touch", "pattern"], default="touch",
+                   help="touch = enter on tap (exp 1); pattern = require a 5m candle pattern (exp 2)")
     p.add_argument("--report", metavar="PATH")
     p.add_argument("--synthetic", action="store_true")
     args = p.parse_args(argv)
@@ -320,17 +469,23 @@ def main(argv=None) -> int:
             cfg.symbol = "SYNTH"
             source = "synthetic"
 
-    meta = {"start": base.index[0].date(), "end": base.index[-1].date(), "n_base": len(base)}
-    print(f"\nPOI lab — {cfg.symbol} · {cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf} "
-          f"· {meta['start']} → {meta['end']} · {len(base)} bars")
+    meta = {"start": base.index[0].date(), "end": base.index[-1].date(),
+            "n_base": len(base), "entry": args.entry}
+    exp = "2 (POI + 5m pattern)" if args.entry == "pattern" else "1 (POI touch)"
+    print(f"\nPOI lab — experiment {exp} — {cfg.symbol} · "
+          f"{cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf} · {meta['start']} → {meta['end']} "
+          f"· {len(base)} bars")
     print("=" * 100)
 
     results = {}
     for mode in ("high", "mid_high"):
-        trades, _ = run_poi_lab(base, Config.preset(args.preset, symbol=cfg.symbol), mode)
+        trades, _ = run_poi_lab(base, Config.preset(args.preset, symbol=cfg.symbol),
+                                mode, entry_mode=args.entry)
         results[mode] = trades
         print(format_lab(trades, cfg, mode, meta))
         print("\n" + cost_robustness(trades))
+        if args.entry == "pattern":
+            print("\n" + refined(trades, cfg))
 
     if args.report:
         with open(args.report, "w") as f:
