@@ -262,6 +262,41 @@ def build_lab_report(results: dict, cfg: Config, meta: dict, source: str) -> str
     return _PAGE.format(title=f"{cfg.symbol} · POI lab", subtitle=subtitle, body=body)
 
 
+def cost_robustness(trades, levels=(0.0, 0.25, 0.5, 0.75, 1.0)) -> str:
+    """Expectancy of each timeframe source as a fixed price slippage (ES points,
+    round-trip) is charged. Cost in R = points / stop-size, so a tiny 5m stop is
+    punished far harder than a wide 1h stop. This disentangles 'which timeframe'
+    from 'which has the tightest stop'."""
+    groups = {
+        "5m only": [t for t in trades if t.poi_tf == "5min"],
+        "15m only": [t for t in trades if t.poi_tf == "15min"],
+        "1h only": [t for t in trades if t.poi_tf == "60min"],
+        "5m + 15m": [t for t in trades if t.poi_tf in ("5min", "15min")],
+        "5m+15m+1h": list(trades),
+    }
+    lines = ["  Cost-robustness by POI source — expectancy R vs ES-points round-trip slippage",
+             "  (cost in R = points / stop size; t-stat tests edge != 0 at zero cost)"]
+    cols = "  ".join(f"{(str(p)+'pt' if p else 'pts=0'):>7}" for p in levels)
+    hdr = f"  {'source':11} {'n':>5} {'medStop':>7} {'t-stat':>6}  {cols}"
+    lines.append(hdr)
+    lines.append("  " + "-" * (len(hdr) - 2))
+    for name, ts in groups.items():
+        if not ts:
+            continue
+        r = np.array([t.r_multiple for t in ts], dtype=float)
+        risk = np.array([t.risk for t in ts], dtype=float)
+        n = len(ts)
+        std = r.std(ddof=1) if n > 1 else float("nan")
+        tstat = r.mean() / (std / np.sqrt(n)) if (n > 1 and std > 0) else float("nan")
+        cells = []
+        for pts in levels:
+            adj = r - np.where(risk > 0, pts / risk, 0.0)
+            cells.append(f"{adj.mean():+7.3f}")
+        lines.append(f"  {name:11} {n:5d} {np.median(risk):7.2f} {tstat:6.1f}  " + "  ".join(cells))
+    lines.append("\n  medStop = median stop distance in ES points (= 1R in price)")
+    return "\n".join(lines)
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="POI laboratory (experiment 1)")
     p.add_argument("--symbol", default="ES=F")
@@ -295,6 +330,7 @@ def main(argv=None) -> int:
         trades, _ = run_poi_lab(base, Config.preset(args.preset, symbol=cfg.symbol), mode)
         results[mode] = trades
         print(format_lab(trades, cfg, mode, meta))
+        print("\n" + cost_robustness(trades))
 
     if args.report:
         with open(args.report, "w") as f:
