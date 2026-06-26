@@ -64,8 +64,46 @@ def trend_series(strat, mode: str) -> np.ndarray:
                     np.where((t15 == "bear") & (t1 == "bear"), "bear", "none"))
 
 
+def _simulate_bracket(direction, entry_idx, entry_time, entry_price, stop, target_rr,
+                      pattern, poi_tf, o, h, l, c, n):
+    """Fixed OCO bracket: exit at the first of {stop (-1R), target (+target_rr R)}.
+    Conservative on same-bar ambiguity — the stop is checked before the target."""
+    risk = abs(entry_price - stop)
+    if direction == "bull":
+        target = entry_price + target_rr * risk
+    else:
+        target = entry_price - target_rr * risk
+    tr = Trade(direction=direction, entry_index=entry_idx, entry_time=entry_time,
+               entry_price=entry_price, init_stop=stop, risk=risk,
+               pattern=pattern, poi_tf=poi_tf)
+    for j in range(entry_idx + 1, n):
+        if direction == "bull":
+            if l[j] <= stop:
+                tr.exit_index, tr.exit_price, tr.exit_reason, tr.r_multiple = j, stop, "stop", -1.0
+                tr.bars_held = j - entry_idx
+                return tr
+            if h[j] >= target:
+                tr.exit_index, tr.exit_price, tr.exit_reason, tr.r_multiple = j, target, "target", target_rr
+                tr.bars_held = j - entry_idx
+                return tr
+        else:
+            if h[j] >= stop:
+                tr.exit_index, tr.exit_price, tr.exit_reason, tr.r_multiple = j, stop, "stop", -1.0
+                tr.bars_held = j - entry_idx
+                return tr
+            if l[j] <= target:
+                tr.exit_index, tr.exit_price, tr.exit_reason, tr.r_multiple = j, target, "target", target_rr
+                tr.bars_held = j - entry_idx
+                return tr
+    px = c[n - 1]
+    tr.exit_index, tr.exit_price, tr.exit_reason = n - 1, float(px), "eod"
+    tr.r_multiple = (px - entry_price) / risk if direction == "bull" else (entry_price - px) / risk
+    tr.bars_held = n - 1 - entry_idx
+    return tr
+
+
 def run_poi_lab(base: pd.DataFrame, cfg: Config, trend_mode: str,
-                entry_mode: str = "touch"):
+                entry_mode: str = "touch", stop_atr_mult=None, target_rr=None):
     """Return (trades, backtester). Each trade carries .same_color, .multi_tf,
     .gap_atr, .poi_tf and .pattern tags.
 
@@ -147,21 +185,32 @@ def run_poi_lab(base: pd.DataFrame, cfg: Config, trend_mode: str,
                 mtf = True
                 break
 
-        # touch-mode blow-through: the tap bar wicks clean through the far edge
-        if (entry_mode == "touch"
-                and ((d == "bull" and l[entry_idx] <= far) or (d == "bear" and h[entry_idx] >= far))):
+        # initial stop: ATR-based if requested, else the POI far edge
+        if stop_atr_mult is not None:
+            a2 = atr_arr[entry_idx]
+            if not (np.isfinite(a2) and a2 > 0):
+                continue
+            stop = entry_price - stop_atr_mult * a2 if d == "bull" else entry_price + stop_atr_mult * a2
+        else:
+            stop = far
+        if (d == "bull" and stop >= entry_price) or (d == "bear" and stop <= entry_price):
+            continue
+
+        if target_rr is not None:                    # fixed bracket exit
+            tr = _simulate_bracket(d, entry_idx, base.index[entry_idx], entry_price, stop,
+                                   target_rr, pat_name, imb.tf, o, h, l, c, n)
+        elif (entry_mode == "touch"
+              and ((d == "bull" and l[entry_idx] <= far) or (d == "bear" and h[entry_idx] >= far))):
+            # touch-mode blow-through: the tap bar wicks clean through the far edge
             tr = Trade(direction=d, entry_index=entry_idx, entry_time=base.index[entry_idx],
                        entry_price=near, init_stop=far, risk=abs(near - far),
                        pattern="touch", poi_tf=imb.tf)
-            tr.exit_index = entry_idx
-            tr.exit_price = far
-            tr.exit_reason = "blew_through"
-            tr.r_multiple = -1.0
-            tr.bars_held = 0
+            tr.exit_index, tr.exit_price, tr.exit_reason, tr.r_multiple, tr.bars_held = \
+                entry_idx, far, "blew_through", -1.0, 0
         else:
             sig = Signal(index=entry_idx, time=base.index[entry_idx], direction=d,
                          entry_price=entry_price, pattern=pat_name, poi=imb, nested_tf=imb.tf)
-            tr = bt._simulate(sig, far, o=o, h=h, l=l, c=c, atr_arr=atr_arr, n=n)
+            tr = bt._simulate(sig, stop, o=o, h=h, l=l, c=c, atr_arr=atr_arr, n=n)
 
         tr.same_color = imb.same_color          # type: ignore[attr-defined]
         tr.multi_tf = mtf                        # type: ignore[attr-defined]
@@ -444,12 +493,127 @@ def cost_robustness(trades, levels=(0.0, 0.25, 0.5, 0.75, 1.0)) -> str:
     return "\n".join(lines)
 
 
+# --------------------------------------------------------------------------- #
+# exit study: fixed ATR stop + fixed R:R targets
+# --------------------------------------------------------------------------- #
+def exit_study(base, preset, symbol, targets, stop_atr, trend_modes=("high", "mid_high")):
+    results = {}
+    for mode in trend_modes:
+        for rr in targets:
+            cfg = Config.preset(preset, symbol=symbol)
+            trades, _ = run_poi_lab(base, cfg, mode, entry_mode="pattern",
+                                    stop_atr_mult=stop_atr, target_rr=rr)
+            results[(mode, rr)] = trades
+    return results
+
+
+def _metrics(trades, cfg):
+    s = compute_stats(trades, cfg)
+    if not s.get("trades"):
+        return None
+    e5, _ = _exp_cost(trades, 0.5)
+    tgt = float(np.mean([t.exit_reason == "target" for t in trades])) * 100
+    return dict(n=s["trades"], win=s["win_rate"] * 100, tgt=tgt,
+                e0=s["expectancy_r"], e5=e5, pf=s["profit_factor"])
+
+
+def format_exit_headline(results, cfg, stop_atr, targets, modes) -> str:
+    lines = [f"  Pattern entry at POI · stop = {stop_atr} ATR · fixed targets · costs shown",
+             f"  {'trend':8} {'R:R':>6} {'n':>5} {'win%':>6} {'b/e%':>5} {'tgt%':>5}  "
+             f"{'exp@0':>7} {'exp@0.5pt':>9} {'PF':>5}"]
+    lines.append("  " + "-" * 74)
+    for mode in modes:
+        for rr in targets:
+            m = _metrics(results[(mode, rr)], cfg)
+            if not m:
+                continue
+            be = 100.0 / (1.0 + rr)
+            lbl = "1h" if mode == "high" else "1h+15m"
+            star = "  <-- beats b/e" if m["win"] > be else ""
+            lines.append(f"  {lbl:8} {('1:%g' % rr):>6} {m['n']:5d} {m['win']:6.1f} "
+                         f"{be:5.1f} {m['tgt']:5.1f}  {m['e0']:+7.3f} {m['e5']:+9.3f} {m['pf']:5.2f}{star}")
+    lines.append("\n  b/e% = win rate needed to break even at that R:R (1/(1+rr))")
+    return "\n".join(lines)
+
+
+def seg_by_rr(results, cfg, mode, keyfn, order, targets, label) -> str:
+    lbl = "1h" if mode == "high" else "1h+15m"
+    lines = [f"\n  {label} — expectancy @0.5pt slippage, by R:R   (trend {lbl})",
+             f"    {'segment':20} " + "".join(f"{('1:%g' % rr):>9}" for rr in targets) + f"{'n@1:2':>8}"]
+    for k in order:
+        cells = []
+        nlast = 0
+        for rr in targets:
+            ts = [t for t in results[(mode, rr)] if keyfn(t) == k]
+            nlast = len(ts)
+            cells.append(f"{_exp_cost(ts, 0.5)[0]:+.3f}" if ts else "—")
+        lines.append(f"    {str(k):20} " + "".join(f"{c:>9}" for c in cells) + f"{nlast:>8}")
+    return "\n".join(lines)
+
+
+def build_exit_report(results, cfg, meta, source, stop_atr, targets, modes) -> str:
+    from .report import _svg_bars, _PAGE, _card
+    rr_labels = [f"1:{rr:g}" for rr in targets]
+
+    # cards: best cost-net expectancy per trend
+    cards = []
+    for mode in modes:
+        best = max(targets, key=lambda rr: (_metrics(results[(mode, rr)], cfg) or {"e5": -9})["e5"])
+        m = _metrics(results[(mode, best)], cfg)
+        lbl = "1h" if mode == "high" else "1h+15m"
+        cards.append(_card(f"{lbl}: best R:R @0.5pt",
+                           f"1:{best:g} → {m['e5']:+.3f}R" if m else "—",
+                           "pos" if (m and m["e5"] > 0) else "neg"))
+    cards_html = "".join(cards)
+
+    sections = []
+    for mode in modes:
+        lbl = "1h" if mode == "high" else "1h+15m"
+        e0 = [round((_metrics(results[(mode, rr)], cfg) or {"e0": 0})["e0"], 3) for rr in targets]
+        e5 = [round((_metrics(results[(mode, rr)], cfg) or {"e5": 0})["e5"], 3) for rr in targets]
+        sections.append((f"Overall expectancy by R:R · trend {lbl} (zero cost)",
+                         _svg_bars(e0, ["#1f9d55" if v >= 0 else "#e3342f" for v in e0],
+                                   labels=rr_labels, fmt="{:+.2f}", label_every=1)))
+        sections.append((f"Overall expectancy by R:R · trend {lbl} (net 0.5pt)",
+                         _svg_bars(e5, ["#1f9d55" if v >= 0 else "#e3342f" for v in e5],
+                                   labels=rr_labels, fmt="{:+.2f}", label_every=1)))
+    charts = "".join(f"<section class='panel'><h3>{t}</h3>{svg}</section>" for t, svg in sections)
+
+    # per-pattern x R:R table (net cost), trend = high
+    pats = [p for p in PATTERNS if p != "touch"]
+    rows = []
+    for k in pats + ["5min", "15min", "60min", "<0.5", "0.5-1", "1-2", ">2"]:
+        keyfn = ((lambda t, k=k: t.pattern == k) if k in pats
+                 else (lambda t, k=k: t.poi_tf == k) if k.endswith("min")
+                 else (lambda t, k=k: _gap_bucket(t) == k))
+        cells = []
+        for rr in targets:
+            ts = [t for t in results[("high", rr)] if keyfn(t)]
+            cells.append(f"<td class='{'pos' if (ts and _exp_cost(ts,0.5)[0] > 0) else 'neg'}'>"
+                         f"{(_exp_cost(ts,0.5)[0]):+.3f}</td>" if ts else "<td>—</td>")
+        rows.append(f"<tr><td class='l'>{k}</td>{''.join(cells)}<td>{len(ts)}</td></tr>")
+    thead = "<th class='l'>segment</th>" + "".join(f"<th>{r}</th>" for r in rr_labels) + "<th>n</th>"
+    table = (f"<section class='panel'><h3>Segment x R:R — expectancy net 0.5pt (trend 1h)</h3>"
+             f"<div class='tw'><table><thead><tr>{thead}</tr></thead><tbody>{''.join(rows)}</tbody>"
+             f"</table></div></section>")
+
+    tfs = f"{cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf}"
+    subtitle = (f"exit study · pattern entry, stop={stop_atr} ATR, targets {', '.join(rr_labels)} · "
+                f"{tfs} · {meta.get('start','?')} → {meta.get('end','?')} · {meta.get('n_base','?')} bars · {source}")
+    body = f"<section class='cards'>{cards_html}</section>{charts}{table}"
+    return _PAGE.format(title=f"{cfg.symbol} · exit study", subtitle=subtitle, body=body)
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="POI laboratory (experiment 1)")
     p.add_argument("--symbol", default="ES=F")
     p.add_argument("--preset", choices=list(Config.PRESETS), default="intraday")
     p.add_argument("--entry", choices=["touch", "pattern"], default="touch",
                    help="touch = enter on tap (exp 1); pattern = require a 5m candle pattern (exp 2)")
+    p.add_argument("--exit-study", action="store_true", dest="exit_study",
+                   help="exp 3: pattern entry, fixed ATR stop, sweep fixed R:R targets")
+    p.add_argument("--stop-atr", type=float, default=1.5, dest="stop_atr")
+    p.add_argument("--targets", default="1,1.5,2", help="comma-separated R:R targets")
     p.add_argument("--report", metavar="PATH")
     p.add_argument("--synthetic", action="store_true")
     args = p.parse_args(argv)
@@ -471,6 +635,29 @@ def main(argv=None) -> int:
 
     meta = {"start": base.index[0].date(), "end": base.index[-1].date(),
             "n_base": len(base), "entry": args.entry}
+
+    if args.exit_study:
+        targets = [float(x) for x in args.targets.split(",")]
+        modes = ("high", "mid_high")
+        res = exit_study(base, args.preset, cfg.symbol, targets, args.stop_atr, modes)
+        print(f"\nPOI lab — experiment 3 (exit study) — {cfg.symbol} · "
+              f"{cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf} · {meta['start']} → {meta['end']} "
+              f"· {len(base)} bars")
+        print("=" * 92)
+        print(format_exit_headline(res, cfg, args.stop_atr, targets, modes))
+        for mode in modes:
+            print(seg_by_rr(res, cfg, mode, lambda t: t.pattern,
+                            [p for p in PATTERNS if p != "touch"], targets, "Candle pattern"))
+            print(seg_by_rr(res, cfg, mode, lambda t: t.poi_tf,
+                            ["60min", "15min", "5min"], targets, "POI timeframe"))
+            print(seg_by_rr(res, cfg, mode, _gap_bucket,
+                            ["<0.5", "0.5-1", "1-2", ">2"], targets, "Gap size (ATR)"))
+        if args.report:
+            with open(args.report, "w") as f:
+                f.write(build_exit_report(res, cfg, meta, source, args.stop_atr, targets, modes))
+            print(f"\nWrote visual exit study -> {args.report}")
+        return 0
+
     exp = "2 (POI + 5m pattern)" if args.entry == "pattern" else "1 (POI touch)"
     print(f"\nPOI lab — experiment {exp} — {cfg.symbol} · "
           f"{cfg.base_tf}/{cfg.mid_tf}/{cfg.high_tf} · {meta['start']} → {meta['end']} "
