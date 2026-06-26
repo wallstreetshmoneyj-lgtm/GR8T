@@ -28,6 +28,7 @@ class Imbalance:
     index: int            # positional index of candle 3 (creation bar)
     created_time: pd.Timestamp     # candle 3 open time
     confirm_time: pd.Timestamp     # when candle 3 closes (no look-ahead before this)
+    same_color: bool = False       # were all three candles the same colour?
     mid: float = field(init=False)
 
     def __post_init__(self) -> None:
@@ -86,6 +87,7 @@ def detect_imbalances(
                         Imbalance(
                             tf=tf, direction="bull", lower=float(h[a]), upper=float(l[d]),
                             index=d, created_time=times[d], confirm_time=times[d] + bar_dt,
+                            same_color=(colors == {"green"}),
                         )
                     )
         # bearish gap
@@ -97,6 +99,7 @@ def detect_imbalances(
                         Imbalance(
                             tf=tf, direction="bear", lower=float(h[d]), upper=float(l[a]),
                             index=d, created_time=times[d], confirm_time=times[d] + bar_dt,
+                            same_color=(colors == {"red"}),
                         )
                     )
     return out
