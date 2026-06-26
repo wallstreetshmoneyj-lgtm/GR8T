@@ -97,6 +97,75 @@ def load_base(cfg, *, use_cache: bool = True, offline: bool = False) -> pd.DataF
     return df
 
 
+# ---------------------------------------------------------------------------
+# GitHub intraday history (OANDA CFDs via FutureSharks/financial-data)
+# 1-minute bars from 2005-2018 -> lets us backtest real regimes (2008/2011/2015/
+# 2018 selloffs) that Yahoo's 60-day 5m cap can't reach. SPX500_USD ~ ES proxy.
+# ---------------------------------------------------------------------------
+GITHUB_OANDA_BASE = ("https://raw.githubusercontent.com/FutureSharks/financial-data/"
+                     "master/pyfinancialdata/data/currencies/oanda")
+
+# friendly symbol -> OANDA instrument
+GITHUB_SYMBOLS = {"SPX500": "SPX500_USD", "NAS100": "NAS100_USD",
+                  "US2000": "US2000_USD", "JP225": "JP225_USD", "UK100": "UK100_GBP"}
+
+
+def _month_iter(start: str, end: str):
+    sy, sm = (int(x) for x in start.split("-"))
+    ey, em = (int(x) for x in end.split("-"))
+    y, m = sy, sm
+    while (y, m) <= (ey, em):
+        yield y, m
+        m += 1
+        if m > 12:
+            m, y = 1, y + 1
+
+
+def fetch_oanda_month(instrument: str, year: int, month: int,
+                      timeout: int = 30, retries: int = 3) -> pd.DataFrame:
+    from io import StringIO
+    url = f"{GITHUB_OANDA_BASE}/{instrument}/{year}/oanda-{instrument}-{year}-{month}.csv"
+    last_err = None
+    for attempt in range(retries):
+        try:
+            r = requests.get(url, timeout=timeout)
+            r.raise_for_status()
+            df = pd.read_csv(StringIO(r.text))
+            # timestamps are UTC; convert to US/Eastern to match the pipeline
+            idx = pd.to_datetime(df["time"], utc=True).dt.tz_convert("US/Eastern")
+            df = df.assign(time=idx).set_index("time")[_OHLCV]
+            df.index = df.index.as_unit("ns")
+            df.index.name = "time"
+            return df
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            time.sleep(2 ** attempt)
+    raise RuntimeError(f"github fetch failed {instrument} {year}-{month}: {last_err}")
+
+
+def load_github(symbol: str, start: str, end: str, base_tf: str = "5min",
+                use_cache: bool = True, offline: bool = False) -> pd.DataFrame:
+    """Load a 1-minute GitHub series for [start, end] (months 'YYYY-MM'),
+    resampled to base_tf. symbol is a friendly key (e.g. 'SPX500')."""
+    instrument = GITHUB_SYMBOLS.get(symbol, symbol)
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    cache = os.path.join(CACHE_DIR, f"gh_{instrument}_{start}_{end}_{base_tf}.parquet")
+    if (offline or use_cache) and os.path.exists(cache):
+        return pd.read_parquet(cache)
+    if offline:
+        raise RuntimeError(f"offline but no cache at {cache}")
+    parts = [fetch_oanda_month(instrument, y, m) for y, m in _month_iter(start, end)]
+    one_min = pd.concat(parts).sort_index()
+    one_min = one_min[~one_min.index.duplicated(keep="first")]
+    one_min = one_min.dropna(subset=["open", "high", "low", "close"])
+    base = resample(one_min, base_tf)
+    try:
+        base.to_parquet(cache)
+    except Exception:  # noqa: BLE001
+        pass
+    return base
+
+
 def _tf_to_yahoo(tf: str) -> str:
     return {"5min": "5m", "15min": "15m", "30min": "30m",
             "60min": "1h", "1h": "1h",
