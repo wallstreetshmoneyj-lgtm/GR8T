@@ -1,0 +1,6 @@
+# Versions used for the committed run (Python 3.11):
+yfinance==1.5.1
+pandas==3.0.3
+numpy==2.4.6
+scipy==1.17.1
+curl_cffi
