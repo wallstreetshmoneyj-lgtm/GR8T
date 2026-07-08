@@ -1,0 +1,226 @@
+============================================================================
+MTP-1 — Micro Trend Portfolio v1: research-grade backtest
+============================================================================
+
+DATA CAVEAT: yfinance continuous futures (=F) are front-month
+chains with roll gaps, NOT back-adjusted. Donchian/ATR see roll
+artifacts. This backtest is an approximation; final validation
+happens later on IBKR back-adjusted data.
+
+Contract specs: SIL and MHG verified against CME (2026-07-08).
+NOTE: the task sheet's MHG line ($1,250/pt, ~$0.63/tick) is off by
+2x vs CME (MHG = 2,500 lbs -> $2,500/pt, $1.25/tick); verified
+values are used.
+
+Loading data (yfinance daily, period=max, auto_adjust=False)...
+
+Market   First bar     Years   Bars Bad rows  In headline?
+ES=F     2000-09-18     25.8   6513        0  YES
+NQ=F     2000-09-18     25.8   6513        0  YES
+YM=F     2002-04-05     24.3   6104        0  YES
+RTY=F    2017-07-10      9.0   2263        0  NO (<10y, reported separately)
+GC=F     2000-08-30     25.9   6484        1  YES
+SI=F     2000-08-30     25.9   6487        0  YES
+HG=F     2000-08-30     25.9   6490        0  YES
+CL=F     2000-08-23     25.9   6492        2  YES
+NG=F     2000-08-30     25.9   6491        0  YES
+ZN=F     2000-09-21     25.8   6475        0  YES
+ZB=F     2000-09-21     25.8   6481        0  YES
+6E=F     2000-09-12     25.8   6515        0  YES
+6B=F     2000-10-05     25.8   6429        0  YES
+6A=F     2000-11-08     25.7   6418        0  YES
+ZC=F     2000-07-17     26.0   6497        0  YES
+ZS=F     2000-09-15     25.8   6489        0  YES
+ZW=F     2000-07-17     26.0   6509        0  YES
+
+Headline universe: 16 markets, union calendar 6564 days (2000-07-17 -> 2026-07-07).
+Look-ahead check 1 PASSED: hand-recomputed Donchian channels match at random samples (all N).
+
+============================================================================
+PASS A — research grid (fractional contracts, 1x costs)
+============================================================================
+
+   N  K    NetP&L$  Sharpe     PF    CAGR   MaxDD Trades     WR
+  20  2     -1,474    0.04   0.99   -0.6%  -52.4%   3871  37.5%
+  20  3      7,780    0.25   1.08    2.2%  -28.7%   2178  38.2%
+  20  4      4,968    0.22   1.12    1.6%  -27.2%   1374  38.6%
+  35  2     -1,392    0.04   0.98   -0.6%  -48.0%   3285  37.3%
+  35  3      7,972    0.26   1.10    2.3%  -26.3%   2008  38.3%
+  35  4      5,093    0.23   1.12    1.6%  -27.4%   1326  38.2%
+  50  2      6,279    0.20   1.06    1.9%  -49.7%   2877  37.4%
+  50  3      8,753    0.28   1.12    2.4%  -22.3%   1878  38.2%
+  50  4      6,259    0.26   1.15    1.9%  -23.2%   1301  37.1%  <- MEDIAN
+  75  2      6,192    0.21   1.06    1.9%  -30.7%   2428  37.8%
+  75  3      8,824    0.29   1.12    2.5%  -28.6%   1647  39.3%
+  75  4      6,469    0.26   1.15    1.9%  -24.0%   1202  37.3%
+ 100  2     15,001    0.34   1.13    3.6%  -26.4%   2115  38.3%
+ 100  3     14,195    0.39   1.17    3.5%  -20.8%   1456  39.7%
+ 100  4      7,893    0.31   1.17    2.3%  -19.3%   1104  38.9%
+
+HEADLINE = MEDIAN combo by net Sharpe: N=50, K=4 (never the best combo).
+Look-ahead check 2 PASSED: sampled trades re-derived from raw arrays (signal->next-bar fill, breakout condition, fill price).
+
+--- MEDIAN combo N=50/K=4 (Pass A, 1x costs) ---
+  Net P&L        : $6,259   (26.0 years)
+  CAGR           : 1.9%    Ann.vol: 8.7%
+  Sharpe         : 0.26     Sortino: 0.37
+  MaxDD          : -23.2%   Calmar: 0.08
+  Profit factor  : 1.15     Win rate: 37.1%
+  Avg win/avg loss: 1.94   Trade skew (R): 3.10
+  Trades         : 1301 (49.9/yr)   Time in market: 44.2%
+  Sanity: WR 37.1% in the honest 30-45% band and Sharpe 0.26 <= 2.0 — plausible for trend following.
+
+--- Reference combo N=50/K=3 (Pass A, 1x costs) ---
+  Net P&L        : $8,753   (26.0 years)
+  CAGR           : 2.4%    Ann.vol: 10.9%
+  Sharpe         : 0.28     Sortino: 0.39
+  MaxDD          : -22.3%   Calmar: 0.11
+  Profit factor  : 1.12     Win rate: 38.2%
+  Avg win/avg loss: 1.81   Trade skew (R): 2.29
+  Trades         : 1878 (72.1/yr)   Time in market: 39.9%
+
+--- Cost sensitivity, median combo (multiplier x [commission + slippage]) ---
+  0x costs: net P&L $       8,287  Sharpe 0.31  PF 1.18
+  1x costs: net P&L $       6,259  Sharpe 0.26  PF 1.15
+  2x costs: net P&L $       3,331  Sharpe 0.17  PF 1.09
+  3x costs: net P&L $       1,663  Sharpe 0.11  PF 1.05
+
+--- Subperiods (median combo, portfolio timeline thirds) ---
+  2000-2009: $287 (positive)
+  2009-2017: $728 (positive)
+  2017-2026: $5,243 (positive)
+
+--- Calendar-year returns, N=50/K=3 (Pass A) ---
+  2000:     4.9%  ####
+  2001:   -12.1%  ############
+  2002:     2.9%  ##
+  2003:    21.1%  #####################
+  2004:    -1.0%  
+  2005:    -6.4%  ######
+  2006:    -0.4%  
+  2007:    11.3%  ###########
+  2008:    12.4%  ############
+  2009:    -3.8%  ###
+  2010:    11.6%  ###########
+  2011:    -8.9%  ########
+  2012:    -1.4%  #
+  2013:     7.5%  #######
+  2014:     5.4%  #####
+  2015:   -13.3%  #############
+  2016:     9.7%  #########
+  2017:    -1.6%  #
+  2018:    10.4%  ##########
+  2019:    -8.6%  ########
+  2020:    16.2%  ################
+  2021:    -2.9%  ##
+  2022:    10.9%  ##########
+  2023:    -3.9%  ###
+  2024:    11.7%  ###########
+  2025:    -2.1%  ##
+  2026:     2.3%  ##
+
+--- Long vs short, per market (median combo, net P&L $) ---
+Market        Long$     Short$
+ES=F            832     -1,040
+NQ=F          1,570       -207
+YM=F            363     -1,128
+GC=F          2,934       -630
+SI=F          2,759       -432
+HG=F            396        136
+CL=F            211        316
+NG=F            931       -629
+ZN=F           -378        406
+ZB=F           -950        624
+6E=F           -285        368
+6B=F           -269       -454
+6A=F            146       -130
+ZC=F          1,413       -824
+ZS=F            593       -304
+ZW=F            809     -1,073
+  (Equity-sector shorts total: $-2,376 — expected weak; reported, not filtered.)
+
+--- Per-market contribution (median combo) ---
+Market   Trades       Net$     WR   avgR
+ES=F         99       -209  35.4%  -0.01
+NQ=F         73      1,363  47.9%   0.19
+YM=F         47       -765  34.0%  -0.12
+GC=F         91      2,304  45.1%   0.28
+SI=F         99      2,328  36.4%   0.23
+HG=F         79        532  36.7%   0.09
+CL=F         88        528  40.9%   0.06
+NG=F         95        302  35.8%   0.04
+ZN=F         89         28  38.2%   0.00
+ZB=F         85       -325  38.8%  -0.05
+6E=F         66         84  34.8%   0.00
+6B=F         74       -723  33.8%  -0.10
+6A=F         71         16  32.4%   0.03
+ZC=F         91        589  28.6%   0.04
+ZS=F         70        289  40.0%   0.10
+ZW=F         79       -264  32.9%   0.02
+
+Pairwise correlation of per-market daily P&L streams: mean 0.06, median 0.03, max 0.67 (full matrix -> correlations.csv). Low correlations are the point of the portfolio.
+
+--- Random-entry bootstrap (1000 sims, seed 42; same exits/sizing/caps/costs; entries at random dates matched to per-market trade & direction counts) ---
+  ... 100/1000 (23s)
+  ... 200/1000 (39s)
+  ... 300/1000 (54s)
+  ... 400/1000 (70s)
+  ... 500/1000 (86s)
+  ... 600/1000 (102s)
+  ... 700/1000 (117s)
+  ... 800/1000 (133s)
+  ... 900/1000 (149s)
+  ... 1000/1000 (165s)
+  Strategy Sharpe 0.26 vs null: mean 0.08, 95th pct 0.36  ->  p = 0.1470
+
+============================================================================
+PASS B — implementation on $10K (integer micros, margin check)
+============================================================================
+Micro-tradable headline markets: ES=F, NQ=F, YM=F, GC=F, SI=F, HG=F, CL=F, 6E=F, 6B=F, 6A=F
+
+--- Pass A on micro universe (fractional), N=50/K=4 ---
+  Net P&L        : $5,237   (25.9 years)
+  CAGR           : 1.6%    Ann.vol: 7.5%
+  Sharpe         : 0.25     Sortino: 0.35
+  MaxDD          : -20.7%   Calmar: 0.08
+  Profit factor  : 1.16     Win rate: 38.2%
+  Avg win/avg loss: 1.88   Trade skew (R): 2.20
+  Trades         : 953 (36.7/yr)   Time in market: 52.0%
+
+--- Pass B (integer micros + ~10% margin), N=50/K=4 ---
+  Net P&L        : $-273   (25.9 years)
+  CAGR           : -0.1%    Ann.vol: 0.4%
+  Sharpe         : -0.25     Sortino: -0.05
+  MaxDD          : -2.7%   Calmar: -0.04
+  Profit factor  : 0.15     Win rate: 28.6%
+  Avg win/avg loss: 0.38   Trade skew (R): 0.56
+  Trades         : 7 (0.3/yr)   Time in market: 0.1%
+Pass B skip log summary: zero_contracts: 10766
+Retention (B vs A on the SAME micro universe): -5.2% (full-universe Pass A P&L was $6,259; same-universe comparison isolates integer-rounding + margin).
+
+--- Markets excluded from headline (<10y history), solo runs at N=50/K=4 ---
+  RTY=F: 9.0y, net P&L $350, Sharpe 0.21, trades 36
+
+============================================================================
+GATE VERDICTS
+============================================================================
+G1 PASS — 13 of 15 grid combos net-positive (need >=12 of 15).
+G2 FAIL — median combo Sharpe 0.26 (need >=0.35), PF 1.15 (need >=1.15).
+G3 PASS — median combo positive in 3 of 3 subperiods (need >=2).
+G4 FAIL — bootstrap p = 0.1470 (need <=0.05).
+G5 PASS — median combo at 2x costs: net P&L $3,331 (need >0).
+G6 FAIL — Pass B retains -5.2% of same-universe Pass A net P&L (need >=50%).
+
+============================================================================
+HONEST SUMMARY
+============================================================================
+Passed: G1, G3, G5. Failed: G2, G4, G6.
+Biggest data-quality risk: front-month roll gaps in yfinance
+continuous futures. Rolls inject artificial price jumps that (a)
+trigger false Donchian breakouts, (b) distort ATR and therefore
+sizing and stops, and (c) bias carry-heavy markets (energy, FX,
+rates) in unknown directions. Every number here inherits that
+distortion; treat this as a structural screen, not a P&L
+forecast. Final validation must use back-adjusted contracts.
+
+Total runtime 166s. Files in /home/user/GR8T/backtests/mtp1/output/: report.txt, grid_results.csv, per_market.csv, trades.csv, correlations.csv, equity_curve.png, bootstrap_hist.png
