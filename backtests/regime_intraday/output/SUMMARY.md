@@ -1,6 +1,6 @@
 # Intraday regime assessment — BULL/BEAR/CHOP vs a random-walk null (1h & 4h, crypto vs futures)
 
-*Run date: 2026-07-10. Concurrent regime CLASSIFICATION only — no trades, no prediction claims. Null = stationary block bootstrap (B=150, mean block 10 bars, seeded) of each instrument's own bars, preserving return distribution and per-bar OHLC geometry. p-values are one-sided empirical P(null ≥ real). 4h bars are resampled from 1h anchored to UTC midnight (native 4h unused, for cross-group consistency). **Futures are front-month continuous with roll gaps that contaminate both the real and null regime states — back-adjusted contracts are needed for firm futures conclusions.** HMM caveat: states are fit once on the in-sample 70% and decoded with Viterbi (a smoothing decode — the label at bar t uses the whole sequence); the null is decoded with the same frozen model, keeping the comparison like-for-like. Pre-registered pass criterion: ≥25% of a classifier's configs with BULL−BEAR forward-drift spread (S1) beating the null at p<0.05 on the FULL window.*
+*Run date: 2026-07-10. Concurrent regime CLASSIFICATION only — no trades, no prediction claims. Null = stationary block bootstrap (B=1000, mean block 10 bars, seeded) of each instrument's own bars, preserving return distribution and per-bar OHLC geometry. p-values are one-sided empirical P(null ≥ real). 4h bars are resampled from 1h anchored to UTC midnight (native 4h unused, for cross-group consistency). **Futures are front-month continuous with roll gaps that contaminate both the real and null regime states — back-adjusted contracts are needed for firm futures conclusions.** HMM caveat: states are fit once on the in-sample 70% and decoded with Viterbi (a smoothing decode — the label at bar t uses the whole sequence); the null is decoded with the same frozen model, keeping the comparison like-for-like. Pre-registered pass criterion: ≥25% of a classifier's configs with BULL−BEAR forward-drift spread (S1) beating the null at p<0.05 on the FULL window.*
 
 ## 1. Sample sizes
 
@@ -55,22 +55,22 @@ S1 = mean forward drift(BULL) − drift(BEAR), in bps/bar. `beat` = share of ins
 
 | Classifier | Group | TF | S1 (bps) | S1 null mean | S1 p (med) | S1 beat null | KW beat null | OOS S1 (bps) | OOS beat | CHOP share |
 |---|---|---|---|---|---|---|---|---|---|---|
-| ADX | crypto | 1h | 0.70 | 0.19 | 0.38 | 1/10 | 1/10 | -1.05 | 0/10 | 0.32 |
-| ADX | crypto | 4h | -0.80 | 0.05 | 0.57 | 0/10 | 0/10 | -3.41 | 0/10 | 0.32 |
-| ADX | futures | 1h | -0.11 | -0.02 | 0.53 | 0/10 | 0/10 | -0.17 | 0/10 | 0.28 |
-| ADX | futures | 4h | -0.11 | -0.27 | 0.51 | 0/10 | 0/10 | -2.87 | 0/10 | 0.31 |
-| ER | crypto | 1h | 2.24 | 0.49 | 0.24 | 1/10 | 1/10 | 0.35 | 0/10 | 0.68 |
-| ER | crypto | 4h | 5.02 | 2.35 | 0.39 | 0/10 | 0/10 | -15.67 | 0/10 | 0.67 |
-| ER | futures | 1h | 0.15 | -0.15 | 0.38 | 0/10 | 0/10 | -0.28 | 0/10 | 0.64 |
-| ER | futures | 4h | -1.14 | -0.67 | 0.58 | 0/10 | 0/10 | -5.60 | 1/10 | 0.63 |
-| HMM | crypto | 1h | 0.51 | -0.13 | 0.49 | 0/10 | 0/10 | -1.82 | 0/10 | 0.35 |
-| HMM | crypto | 4h | 2.73 | 1.01 | 0.41 | 1/10 | 0/10 | -1.08 | 0/10 | 0.38 |
-| HMM | futures | 1h | 0.09 | 0.19 | 0.58 | 0/10 | 0/10 | -0.83 | 0/10 | 0.40 |
-| HMM | futures | 4h | 1.28 | 0.41 | 0.41 | 0/10 | 0/10 | -0.42 | 0/10 | 0.43 |
-| SWING | crypto | 1h | 0.29 | 0.10 | 0.49 | 0/10 | 1/10 | -0.42 | 0/10 | 0.51 |
-| SWING | crypto | 4h | 1.14 | 1.23 | 0.46 | 0/10 | 0/10 | -5.54 | 0/10 | 0.50 |
-| SWING | futures | 1h | -0.39 | -0.08 | 0.71 | 0/10 | 0/10 | -0.17 | 2/10 | 0.59 |
-| SWING | futures | 4h | -0.84 | -0.59 | 0.59 | 0/10 | 0/10 | -1.54 | 0/10 | 0.49 |
+| ADX | crypto | 1h | 0.70 | 0.37 | 0.41 | 1/10 | 1/10 | -1.05 | 0/10 | 0.32 |
+| ADX | crypto | 4h | -0.80 | 0.09 | 0.56 | 0/10 | 0/10 | -3.41 | 0/10 | 0.32 |
+| ADX | futures | 1h | -0.11 | -0.03 | 0.50 | 0/10 | 0/10 | -0.17 | 0/10 | 0.28 |
+| ADX | futures | 4h | -0.11 | -0.16 | 0.50 | 0/10 | 1/10 | -2.93 | 0/10 | 0.31 |
+| ER | crypto | 1h | 2.24 | 0.69 | 0.23 | 1/10 | 1/10 | 0.35 | 0/10 | 0.68 |
+| ER | crypto | 4h | 5.02 | 2.34 | 0.35 | 0/10 | 0/10 | -15.67 | 0/10 | 0.67 |
+| ER | futures | 1h | 0.15 | -0.24 | 0.38 | 1/10 | 0/10 | -0.28 | 1/10 | 0.64 |
+| ER | futures | 4h | -1.14 | -0.61 | 0.60 | 0/10 | 0/10 | -5.60 | 1/10 | 0.63 |
+| HMM | crypto | 1h | 0.51 | -0.13 | 0.51 | 0/10 | 0/10 | -1.82 | 0/10 | 0.35 |
+| HMM | crypto | 4h | 2.73 | 0.53 | 0.40 | 1/10 | 0/10 | -1.08 | 0/10 | 0.38 |
+| HMM | futures | 1h | 0.09 | 0.23 | 0.61 | 0/10 | 0/10 | -0.83 | 1/10 | 0.40 |
+| HMM | futures | 4h | 1.28 | 0.47 | 0.41 | 0/10 | 0/10 | -0.42 | 0/10 | 0.43 |
+| SWING | crypto | 1h | 0.29 | 0.21 | 0.48 | 0/10 | 2/10 | -0.42 | 0/10 | 0.51 |
+| SWING | crypto | 4h | 1.14 | 1.23 | 0.47 | 0/10 | 0/10 | -5.54 | 0/10 | 0.50 |
+| SWING | futures | 1h | -0.39 | -0.03 | 0.71 | 0/10 | 0/10 | -0.17 | 1/10 | 0.59 |
+| SWING | futures | 4h | -0.84 | -0.38 | 0.62 | 0/10 | 0/10 | -1.54 | 0/10 | 0.49 |
 
 ## 3. Per-regime forward behavior (medians across instruments, FULL window)
 
@@ -78,9 +78,9 @@ S1 = mean forward drift(BULL) − drift(BEAR), in bps/bar. `beat` = share of ins
 
 | Group | TF | Drift BULL (bps) | Drift CHOP | Drift BEAR | Vol BULL | Vol CHOP | Vol BEAR | AC1 trend | AC1 chop | Eff trend | Eff chop |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| crypto | 1h | 0.67 | -0.59 | -0.15 | 0.86 | 0.74 | 0.90 | -0.00 | 0.02 | 0.22 | 0.37 |
+| crypto | 1h | 0.68 | -0.60 | -0.15 | 0.86 | 0.74 | 0.90 | -0.00 | 0.02 | 0.22 | 0.37 |
 | crypto | 4h | -0.17 | -0.63 | 0.69 | 0.88 | 0.71 | 0.86 | 0.00 | 0.02 | 0.23 | 0.40 |
-| futures | 1h | 0.33 | 0.53 | 0.12 | 0.19 | 0.20 | 0.24 | -0.05 | 0.00 | 0.24 | 0.39 |
+| futures | 1h | 0.33 | 0.54 | 0.12 | 0.19 | 0.20 | 0.24 | -0.05 | 0.00 | 0.24 | 0.39 |
 | futures | 4h | 0.05 | 1.08 | 0.79 | 0.19 | 0.18 | 0.27 | 0.00 | 0.00 | 0.28 | 0.38 |
 
 ### ER
@@ -117,10 +117,10 @@ d_eff = per-segment efficiency of trend states minus CHOP; d_ac1 = lag-1 autocor
 | Classifier | Group | TF | d_eff | d_eff beat null | d_ac1 | d_ac1 beat null | |CHOP drift| smallest |
 |---|---|---|---|---|---|---|---|
 | ADX | crypto | 1h | -0.16 | 0/10 | -0.02 | 0/10 | 3/10 |
-| ADX | crypto | 4h | -0.18 | 1/10 | -0.02 | 0/10 | 1/10 |
+| ADX | crypto | 4h | -0.18 | 0/10 | -0.02 | 0/10 | 1/10 |
 | ADX | futures | 1h | -0.15 | 0/10 | -0.05 | 0/10 | 3/10 |
 | ADX | futures | 4h | -0.11 | 0/10 | -0.00 | 0/10 | 2/10 |
-| ER | crypto | 1h | 0.02 | 0/10 | 0.01 | 0/10 | 6/10 |
+| ER | crypto | 1h | 0.02 | 1/10 | 0.01 | 0/10 | 6/10 |
 | ER | crypto | 4h | 0.00 | 0/10 | -0.01 | 0/10 | 4/10 |
 | ER | futures | 1h | 0.02 | 0/10 | 0.01 | 1/10 | 5/10 |
 | ER | futures | 4h | 0.03 | 1/10 | 0.00 | 0/10 | 5/10 |
@@ -137,30 +137,30 @@ d_eff = per-segment efficiency of trend states minus CHOP; d_ac1 = lag-1 autocor
 
 | Axis | Value | Configs beating null | Share |
 |---|---|---|---|
-| timeframe | 1h | 2/80 | 0.03 |
+| timeframe | 1h | 3/80 | 0.04 |
 | timeframe | 4h | 1/80 | 0.01 |
 | group | crypto | 3/80 | 0.04 |
-| group | futures | 0/80 | 0.00 |
+| group | futures | 1/80 | 0.01 |
 
 ## 6. Plain-English answers
 
 **Q1 — Can regime be mechanically assessed on 4h/1h?**
 - ADX 1h: 5% of 20 configs beat the null on BULL−BEAR separation (OOS: 0%) → NO by the pre-registered bar.
 - ADX 4h: 0% of 20 configs beat the null on BULL−BEAR separation (OOS: 0%) → NO by the pre-registered bar.
-- ER 1h: 5% of 20 configs beat the null on BULL−BEAR separation (OOS: 0%) → NO by the pre-registered bar.
+- ER 1h: 10% of 20 configs beat the null on BULL−BEAR separation (OOS: 5%) → NO by the pre-registered bar.
 - ER 4h: 0% of 20 configs beat the null on BULL−BEAR separation (OOS: 5%) → NO by the pre-registered bar.
-- HMM 1h: 0% of 20 configs beat the null on BULL−BEAR separation (OOS: 0%) → NO by the pre-registered bar.
+- HMM 1h: 0% of 20 configs beat the null on BULL−BEAR separation (OOS: 5%) → NO by the pre-registered bar.
 - HMM 4h: 5% of 20 configs beat the null on BULL−BEAR separation (OOS: 0%) → NO by the pre-registered bar.
-- SWING 1h: 0% of 20 configs beat the null on BULL−BEAR separation (OOS: 10%) → NO by the pre-registered bar.
+- SWING 1h: 0% of 20 configs beat the null on BULL−BEAR separation (OOS: 5%) → NO by the pre-registered bar.
 - SWING 4h: 0% of 20 configs beat the null on BULL−BEAR separation (OOS: 0%) → NO by the pre-registered bar.
 
-**Q2 — Which classifier separates best?** Ranked by share of configs beating the null on S1 (FULL): ADX (2%), ER (2%), HMM (2%), SWING (0%). Pre-registered verdicts: ADX: FAIL, ER: FAIL, HMM: FAIL, SWING: FAIL.
+**Q2 — Which classifier separates best?** Ranked by share of configs beating the null on S1 (FULL): ER (5%), ADX (2%), HMM (2%), SWING (0%). Pre-registered verdicts: ADX: FAIL, ER: FAIL, HMM: FAIL, SWING: FAIL.
 
-**Q3 — Does the CHOP state actually work?** Share of configs where trend-minus-chop efficiency / persistence beats the null: ADX: eff 2%, ac1 0%; ER: eff 2%, ac1 2%; HMM: eff 2%, ac1 0%; SWING: eff 5%, ac1 2%.
+**Q3 — Does the CHOP state actually work?** Share of configs where trend-minus-chop efficiency / persistence beats the null: ADX: eff 0%, ac1 0%; ER: eff 5%, ac1 2%; HMM: eff 2%, ac1 0%; SWING: eff 5%, ac1 2%.
 
-**Q4 — 1h vs 4h:** configs beating the null on S1 — 1h: 2% of 80, 4h: 1% of 80.
+**Q4 — 1h vs 4h:** configs beating the null on S1 — 1h: 4% of 80, 4h: 1% of 80.
 
-**Q5 — crypto vs futures:** configs beating the null on S1 — crypto: 4% of 80, futures: 0% of 80.
+**Q5 — crypto vs futures:** configs beating the null on S1 — crypto: 4% of 80, futures: 1% of 80.
 
 **Q6 — Cosmetic labels:** ADX, ER, HMM, SWING did not beat the shuffled null at the pre-registered bar — their BULL/BEAR/CHOP labels partition bars in ways statistically indistinguishable from the same labels drawn on block-shuffled (structureless) data. Those regime labels are cosmetic at these timeframes.
 
