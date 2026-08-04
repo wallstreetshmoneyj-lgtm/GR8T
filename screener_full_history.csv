@@ -1,0 +1,38 @@
+Ticker,Category,Tracks,Fee %,CAGR %,StDev %,Return/Risk,MaxDD %,Net CAGR %,Start,Months
+USMV,Factor,Minimum volatility,0.15,11.54,11.15,1.04,-19.1,11.39,2011-12,176
+SCHD,Factor,Dividend growth + quality,0.06,13.22,13.58,0.97,-21.5,13.16,2011-12,176
+QUAL,Factor,Quality,0.15,13.93,14.65,0.95,-27.8,13.78,2013-09,155
+MTUM,Factor,Momentum,0.15,15.58,16.72,0.93,-30.2,15.43,2013-06,158
+SPLV,Factor,Low volatility,0.25,10.18,11.68,0.87,-21.4,9.93,2011-07,181
+VIG,Factor,Dividend growth (10yr),0.05,10.37,13.31,0.78,-41.1,10.32,2006-07,241
+RSP,Factor,S&P 500 equal weight,0.2,10.89,16.43,0.66,-55.6,10.69,2003-06,278
+VYM,Factor,High dividend yield,0.06,9.29,14.56,0.64,-51.8,9.23,2007-01,235
+AVDV,International,Intl small value,0.36,15.2,22.34,0.68,-36.9,14.84,2019-10,82
+AVEM,International,Emerging (Avantis),0.33,11.9,19.28,0.62,-32.4,11.57,2019-10,82
+IDEV,International,Developed ex-US (MSCI),0.04,9.24,15.5,0.6,-27.5,9.2,2017-05,111
+VT,International,Total world incl US,0.05,9.02,16.66,0.54,-43.4,8.97,2008-08,216
+VXUS,International,Total intl ex-US,0.08,6.46,15.04,0.43,-27.8,6.38,2011-03,185
+EFA,International,EAFE (MSCI),0.33,7.1,16.55,0.43,-57.4,6.77,2001-10,298
+IEMG,International,"Emerging (MSCI, has Korea)",0.09,6.08,16.57,0.37,-34.6,5.99,2012-12,164
+VGK,International,Europe,0.09,6.83,18.54,0.37,-59.7,6.74,2005-05,255
+VWO,International,"Emerging (FTSE, no Korea)",0.06,7.3,20.21,0.36,-61.7,7.24,2005-05,255
+VEA,International,Developed ex-US (FTSE),0.03,5.23,17.85,0.29,-57.1,5.2,2007-09,227
+XLE,Sector,Energy (S&P 500 only),0.08,9.17,25.03,0.37,-64.0,9.09,1999-02,330
+VDE,Sector,Energy (broad),0.09,8.27,26.64,0.31,-68.8,8.18,2004-11,261
+SCHG,Style,Large growth (Schwab),0.04,16.44,16.71,0.98,-31.8,16.4,2010-03,197
+VUG,Style,Large growth,0.04,12.08,16.55,0.73,-47.2,12.04,2004-03,269
+VTV,Style,Large value,0.04,9.6,14.51,0.66,-54.8,9.56,2004-03,269
+AVUV,Style,Small value (Avantis),0.25,16.67,28.17,0.59,-46.8,16.42,2019-10,82
+VIOV,Style,S&P 600 small value,0.1,11.34,20.15,0.56,-40.2,11.24,2010-11,189
+VBR,Style,Small value (Vanguard),0.07,9.55,19.1,0.5,-55.9,9.48,2004-03,269
+VOO,US broad,S&P 500,0.03,14.44,14.11,1.02,-23.9,14.41,2010-11,189
+QQQM,US broad,Nasdaq-100,0.15,18.46,22.36,0.83,-33.1,18.31,2020-11,69
+ONEQ,US broad,Nasdaq Composite,0.21,12.9,17.95,0.72,-51.2,12.69,2003-11,273
+ITOT,US broad,US total market (iShares),0.03,10.64,15.02,0.71,-50.8,10.61,2004-03,269
+VTI,US broad,US total market,0.03,9.78,15.35,0.64,-50.8,9.75,2001-08,300
+DIA,US broad,Dow 30 (price-weighted),0.16,8.84,14.93,0.59,-47.0,8.68,1998-03,341
+IWB,US broad,Russell 1000,0.15,8.43,15.36,0.55,-51.0,8.28,2000-07,313
+VXF,US broad,Extended mkt (VTI minus VOO),0.05,10.34,18.78,0.55,-52.6,10.29,2002-03,293
+IJH,US broad,S&P MidCap 400,0.05,9.62,17.73,0.54,-49.5,9.57,2000-07,313
+IJR,US broad,S&P SmallCap 600,0.06,9.79,19.44,0.5,-51.8,9.73,2000-07,313
+IWM,US broad,Russell 2000 (small),0.19,8.25,20.0,0.41,-52.5,8.06,2000-07,313
