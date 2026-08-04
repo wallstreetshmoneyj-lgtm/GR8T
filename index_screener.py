@@ -61,7 +61,6 @@ UNIVERSE = {
     # --- US broad market ---
     "VTI":  ("US total market",            0.03, "US broad"),
     "VOO":  ("S&P 500",                    0.03, "US broad"),
-    "SPLG": ("S&P 500 (cheapest)",         0.02, "US broad"),
     "ITOT": ("US total market (iShares)",  0.03, "US broad"),
     "QQQ":  ("Nasdaq-100 (orig, 1999)",    0.20, "US broad"),
     "QQQM": ("Nasdaq-100",                 0.15, "US broad"),
