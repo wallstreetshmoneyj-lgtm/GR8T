@@ -17,7 +17,7 @@ IEMG,International,"Emerging (MSCI, has Korea)",0.09,6.08,16.57,0.37,-34.6,5.99,
 VGK,International,Europe,0.09,6.83,18.54,0.37,-59.7,6.74,2005-05,255
 VWO,International,"Emerging (FTSE, no Korea)",0.06,7.3,20.21,0.36,-61.7,7.24,2005-05,255
 VEA,International,Developed ex-US (FTSE),0.03,5.23,17.85,0.29,-57.1,5.2,2007-09,227
-XLE,Sector,Energy (S&P 500 only),0.08,9.17,25.03,0.37,-64.0,9.09,1999-02,330
+XLE,Sector,Energy (S&P 500 only),0.08,8.54,25.15,0.34,-64.0,8.46,2000-01,319
 VDE,Sector,Energy (broad),0.09,8.27,26.64,0.31,-68.8,8.18,2004-11,261
 SCHG,Style,Large growth (Schwab),0.04,16.44,16.71,0.98,-31.8,16.4,2010-03,197
 VUG,Style,Large growth,0.04,12.08,16.55,0.73,-47.2,12.04,2004-03,269
@@ -30,9 +30,10 @@ QQQM,US broad,Nasdaq-100,0.15,18.46,22.36,0.83,-33.1,18.31,2020-11,69
 ONEQ,US broad,Nasdaq Composite,0.21,12.9,17.95,0.72,-51.2,12.69,2003-11,273
 ITOT,US broad,US total market (iShares),0.03,10.64,15.02,0.71,-50.8,10.61,2004-03,269
 VTI,US broad,US total market,0.03,9.78,15.35,0.64,-50.8,9.75,2001-08,300
-DIA,US broad,Dow 30 (price-weighted),0.16,8.84,14.93,0.59,-47.0,8.68,1998-03,341
+DIA,US broad,Dow 30 (price-weighted),0.16,8.14,14.67,0.56,-47.0,7.98,2000-01,319
 IWB,US broad,Russell 1000,0.15,8.43,15.36,0.55,-51.0,8.28,2000-07,313
 VXF,US broad,Extended mkt (VTI minus VOO),0.05,10.34,18.78,0.55,-52.6,10.29,2002-03,293
 IJH,US broad,S&P MidCap 400,0.05,9.62,17.73,0.54,-49.5,9.57,2000-07,313
 IJR,US broad,S&P SmallCap 600,0.06,9.79,19.44,0.5,-51.8,9.73,2000-07,313
 IWM,US broad,Russell 2000 (small),0.19,8.25,20.0,0.41,-52.5,8.06,2000-07,313
+QQQ,US broad,"Nasdaq-100 (orig, 1999)",0.2,8.59,22.94,0.37,-81.1,8.39,2000-01,319

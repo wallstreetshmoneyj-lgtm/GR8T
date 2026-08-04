@@ -12,14 +12,21 @@ These funds have wildly different inception dates. XLE launched 1998, VOO 2010,
 AVUV 2019. Comparing "CAGR" across them using each fund's full history is
 meaningless: AVUV's number covers only a bull run, XLE's includes 2008.
 
-So the script runs TWO passes:
+So the script runs TWO kinds of passes:
 
-  PASS 1 — COMMON WINDOW. Finds the latest inception date in your list and
-           measures every fund from that date forward. Apples to apples.
-           This is the table you actually make decisions from.
+  PASS 1 — ERA TABLES. Three fixed windows: 2000s (2000-2009), 2010s
+           (2010-2019), 2020s (2020-present). Every fund appears in every
+           table; a fund that didn't exist yet (or has under 24 months of
+           data in the window) gets a blank row. A 'From' date later than
+           the era start means the fund launched mid-era — partial window,
+           read with care. Within one table, filled rows are comparable.
 
-  PASS 2 — FULL HISTORY. Each fund's own max history, with the start date
-           printed next to it. Useful context, NOT comparable across rows.
+  PASS 2 — FULL HISTORY. Each fund's own max history (floored at 2000-01),
+           with the start date printed next to it. Useful context, NOT
+           comparable across rows.
+
+Nothing before 2000-01 is used, even for funds whose data goes back further
+(DIA, XLE, QQQ).
 
 All returns are monthly, dividend-adjusted (total return). Volatility is
 annualized by sqrt(12). Never compare these stdev figures to a number you
@@ -36,6 +43,15 @@ import requests
 PERIODS_PER_YEAR = 12
 RF_ANNUAL = 0.0          # set to a real T-bill rate if you want honest Sharpes
 
+ANALYSIS_START = "2000-01"   # nothing before this month is used, ever
+MIN_MONTHS = 24              # blank a fund's row if it has less than this in a window
+
+ERAS = [                     # (label, start, end) — end None = latest month
+    ("2000s", "2000-01", "2009-12"),
+    ("2010s", "2010-01", "2019-12"),
+    ("2020s", "2020-01", None),
+]
+
 
 # =============================================================================
 # UNIVERSE — expense ratios are HARDCODED. Verify each on the issuer page.
@@ -47,6 +63,7 @@ UNIVERSE = {
     "VOO":  ("S&P 500",                    0.03, "US broad"),
     "SPLG": ("S&P 500 (cheapest)",         0.02, "US broad"),
     "ITOT": ("US total market (iShares)",  0.03, "US broad"),
+    "QQQ":  ("Nasdaq-100 (orig, 1999)",    0.20, "US broad"),
     "QQQM": ("Nasdaq-100",                 0.15, "US broad"),
     "ONEQ": ("Nasdaq Composite",           0.21, "US broad"),
     "DIA":  ("Dow 30 (price-weighted)",    0.16, "US broad"),
@@ -160,6 +177,22 @@ def stats_row(ticker, rets):
     }
 
 
+ERA_COLS = ["Ticker", "Category", "Tracks", "Fee %", "CAGR %", "StDev %",
+            "Return/Risk", "MaxDD %", "Net CAGR %", "From", "Months"]
+
+
+def era_row(ticker, rets):
+    """Stats for one fund in one era window; blank metrics if it wasn't there."""
+    if len(rets) < MIN_MONTHS:
+        name, fee, cat = UNIVERSE[ticker]
+        return {"Ticker": ticker, "Category": cat, "Tracks": name, "Fee %": fee,
+                "CAGR %": np.nan, "StDev %": np.nan, "Return/Risk": np.nan,
+                "MaxDD %": np.nan, "Net CAGR %": np.nan, "From": "", "Months": ""}
+    d = stats_row(ticker, rets)
+    d["From"] = d.pop("Start")
+    return d
+
+
 # =============================================================================
 # RUN
 # =============================================================================
@@ -176,40 +209,51 @@ def main():
 
     px = pd.DataFrame(series)
 
-    # ---------- PASS 1: common window ----------
-    common = px.dropna()
-    if len(common) < 36:
-        print("\nCommon window under 3 years. Trim the newest funds from UNIVERSE.")
-    rets_c = common.pct_change().dropna()
-    tbl1 = pd.DataFrame([stats_row(t, rets_c[t]) for t in rets_c.columns])
-    tbl1 = tbl1.drop(columns=["Start", "Months"]).sort_values(
-        ["Category", "Return/Risk"], ascending=[True, False])
+    # Returns computed on full data, then floored at 2000-01 so a fund with
+    # older prices still gets its January 2000 return.
+    rets_all = px.pct_change()
+    rets_all = rets_all[rets_all.index >= pd.Period(ANALYSIS_START).to_timestamp("M")]
 
-    print("\n" + "=" * 108)
-    print(f"PASS 1 — COMMON WINDOW  {rets_c.index[0]:%Y-%m} to {rets_c.index[-1]:%Y-%m}"
-          f"  ({len(rets_c)} months).  THIS IS THE COMPARABLE TABLE.")
-    print("=" * 108)
-    print(tbl1.to_string(index=False))
-    print("\nWindow is set by the youngest fund. Drop AVUV/IDEV/QQQM/AVEM to extend it.")
+    # ---------- PASS 1: era tables ----------
+    saved = []
+    for label, start, end in ERAS:
+        s = pd.Period(start).to_timestamp("M")
+        e = rets_all.index[-1] if end is None else pd.Period(end).to_timestamp("M")
+        sub = rets_all.loc[s:e]
+        tbl = pd.DataFrame([era_row(t, sub[t].dropna()) for t in px.columns])
+        tbl = tbl[ERA_COLS].sort_values(["Category", "Return/Risk"],
+                                        ascending=[True, False], na_position="last")
+        tbl = tbl.fillna("")
+
+        print("\n" + "=" * 118)
+        print(f"PASS 1 — ERA: {label}  {s:%Y-%m} to {e:%Y-%m}.  Blank row = fund"
+              f" didn't exist yet (or <{MIN_MONTHS} months of data in this era).")
+        print(f"A 'From' later than {s:%Y-%m} = launched mid-era, partial window.")
+        print("=" * 118)
+        print(tbl.to_string(index=False))
+
+        fname = f"screener_{label}.csv"
+        tbl.to_csv(fname, index=False)
+        saved.append(fname)
 
     # ---------- PASS 2: full history ----------
-    rets_f = px.pct_change()
     rows = []
     for t in px.columns:
-        r = rets_f[t].dropna()
-        if len(r) > 24:
+        r = rets_all[t].dropna()
+        if len(r) >= MIN_MONTHS:
             rows.append(stats_row(t, r))
     tbl2 = pd.DataFrame(rows).sort_values(["Category", "Return/Risk"],
                                           ascending=[True, False])
 
-    print("\n" + "=" * 108)
-    print("PASS 2 — FULL HISTORY PER FUND.  NOT COMPARABLE ACROSS ROWS — different start dates.")
-    print("=" * 108)
+    print("\n" + "=" * 118)
+    print("PASS 2 — FULL HISTORY PER FUND (floored at 2000-01)."
+          "  NOT COMPARABLE ACROSS ROWS — different start dates.")
+    print("=" * 118)
     print(tbl2.to_string(index=False))
 
-    tbl1.to_csv("screener_common_window.csv", index=False)
     tbl2.to_csv("screener_full_history.csv", index=False)
-    print("\nSaved: screener_common_window.csv, screener_full_history.csv")
+    saved.append("screener_full_history.csv")
+    print("\nSaved: " + ", ".join(saved))
     print("\nREMINDERS")
     print("  - StDev is monthly-sampled, annualized by sqrt(12). Understates vs daily.")
     print("  - Fee column is hardcoded. Verify on the issuer page before buying.")

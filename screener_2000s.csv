@@ -1,0 +1,39 @@
+Ticker,Category,Tracks,Fee %,CAGR %,StDev %,Return/Risk,MaxDD %,Net CAGR %,From,Months
+RSP,Factor,S&P 500 equal weight,0.2,6.77,18.3,0.37,-55.6,6.57,2003-06,79
+VIG,Factor,Dividend growth (10yr),0.05,0.6,15.59,0.04,-41.1,0.55,2006-07,42
+VYM,Factor,High dividend yield,0.06,-6.83,20.6,-0.33,-51.8,-6.89,2007-01,36
+MTUM,Factor,Momentum,0.15,,,,,,,
+QUAL,Factor,Quality,0.15,,,,,,,
+USMV,Factor,Minimum volatility,0.15,,,,,,,
+SPLV,Factor,Low volatility,0.25,,,,,,,
+SCHD,Factor,Dividend growth + quality,0.06,,,,,,,
+VWO,International,"Emerging (FTSE, no Korea)",0.06,16.03,28.19,0.57,-61.7,15.97,2005-05,56
+EFA,International,EAFE (MSCI),0.33,7.05,18.55,0.38,-57.4,6.72,2001-10,99
+VGK,International,Europe,0.09,4.48,21.92,0.2,-59.7,4.39,2005-05,56
+VEA,International,Developed ex-US (FTSE),0.03,-10.36,28.14,-0.37,-57.1,-10.39,2007-09,28
+VT,International,Total world incl US,0.05,,,,,,,
+VXUS,International,Total intl ex-US,0.08,,,,,,,
+IDEV,International,Developed ex-US (MSCI),0.04,,,,,,,
+IEMG,International,"Emerging (MSCI, has Korea)",0.09,,,,,,,
+AVEM,International,Emerging (Avantis),0.33,,,,,,,
+AVDV,International,Intl small value,0.36,,,,,,,
+VDE,Sector,Energy (broad),0.09,11.64,25.08,0.46,-54.3,11.55,2004-11,62
+XLE,Sector,Energy (S&P 500 only),0.08,9.44,22.57,0.42,-53.1,9.36,2000-01,120
+VBR,Style,Small value (Vanguard),0.07,3.59,20.96,0.17,-55.9,3.52,2004-03,70
+VUG,Style,Large growth,0.04,2.15,15.48,0.14,-47.2,2.11,2004-03,70
+VTV,Style,Large value,0.04,1.92,16.01,0.12,-54.8,1.88,2004-03,70
+SCHG,Style,Large growth (Schwab),0.04,,,,,,,
+VIOV,Style,S&P 600 small value,0.1,,,,,,,
+AVUV,Style,Small value (Avantis),0.25,,,,,,,
+VXF,US broad,Extended mkt (VTI minus VOO),0.05,6.46,19.0,0.34,-52.6,6.41,2002-03,94
+IJH,US broad,S&P MidCap 400,0.05,5.51,18.53,0.3,-49.5,5.46,2000-07,114
+IJR,US broad,S&P SmallCap 600,0.06,5.78,20.04,0.29,-51.8,5.72,2000-07,114
+ONEQ,US broad,Nasdaq Composite,0.21,3.2,18.72,0.17,-51.2,2.99,2003-11,74
+IWM,US broad,Russell 2000 (small),0.19,3.26,20.83,0.16,-52.5,3.07,2000-07,114
+VTI,US broad,US total market,0.03,2.01,16.14,0.12,-50.8,1.98,2001-08,101
+ITOT,US broad,US total market (iShares),0.03,1.75,15.5,0.11,-50.8,1.72,2004-03,70
+DIA,US broad,Dow 30 (price-weighted),0.16,1.14,15.48,0.07,-47.0,0.98,2000-01,120
+IWB,US broad,Russell 1000,0.15,-0.64,16.36,-0.04,-51.0,-0.79,2000-07,114
+QQQ,US broad,"Nasdaq-100 (orig, 1999)",0.2,-6.42,29.38,-0.22,-81.1,-6.62,2000-01,120
+VOO,US broad,S&P 500,0.03,,,,,,,
+QQQM,US broad,Nasdaq-100,0.15,,,,,,,

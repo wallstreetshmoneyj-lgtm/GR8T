@@ -1,0 +1,39 @@
+Ticker,Category,Tracks,Fee %,CAGR %,StDev %,Return/Risk,MaxDD %,Net CAGR %,From,Months
+VIG,Factor,Dividend growth (10yr),0.05,12.43,14.76,0.84,-20.2,12.38,2020-01,79
+QUAL,Factor,Quality,0.15,13.94,17.38,0.8,-27.8,13.79,2020-01,79
+VYM,Factor,High dividend yield,0.06,11.93,15.66,0.76,-22.0,11.87,2020-01,79
+SCHD,Factor,Dividend growth + quality,0.06,12.59,16.7,0.75,-20.1,12.53,2020-01,79
+MTUM,Factor,Momentum,0.15,15.32,20.77,0.74,-30.2,15.17,2020-01,79
+RSP,Factor,S&P 500 equal weight,0.2,11.76,18.42,0.64,-25.3,11.56,2020-01,79
+USMV,Factor,Minimum volatility,0.15,8.05,13.75,0.59,-19.1,7.9,2020-01,79
+SPLV,Factor,Low volatility,0.25,6.34,14.32,0.44,-21.4,6.09,2020-01,79
+VT,International,Total world incl US,0.05,12.62,16.52,0.76,-25.5,12.57,2020-01,79
+VEA,International,Developed ex-US (FTSE),0.03,10.6,17.43,0.61,-28.1,10.57,2020-01,79
+IDEV,International,Developed ex-US (MSCI),0.04,10.11,16.95,0.6,-27.5,10.07,2020-01,79
+AVDV,International,Intl small value,0.36,13.56,22.6,0.6,-33.5,13.2,2020-01,79
+VXUS,International,Total intl ex-US,0.08,9.69,16.62,0.58,-27.8,9.61,2020-01,79
+EFA,International,EAFE (MSCI),0.33,9.77,16.72,0.58,-27.6,9.44,2020-01,79
+VGK,International,Europe,0.09,10.35,18.78,0.55,-31.0,10.26,2020-01,79
+AVEM,International,Emerging (Avantis),0.33,10.45,19.36,0.54,-32.4,10.12,2020-01,79
+IEMG,International,"Emerging (MSCI, has Korea)",0.09,8.56,18.19,0.47,-34.6,8.47,2020-01,79
+VWO,International,"Emerging (FTSE, no Korea)",0.06,7.28,16.42,0.44,-31.9,7.22,2020-01,79
+XLE,Sector,Energy (S&P 500 only),0.08,15.56,34.1,0.46,-44.4,15.48,2020-01,79
+VDE,Sector,Energy (broad),0.09,15.85,34.58,0.46,-46.0,15.76,2020-01,79
+SCHG,Style,Large growth (Schwab),0.04,18.39,20.53,0.9,-31.8,18.35,2020-01,79
+VUG,Style,Large growth,0.04,17.66,20.94,0.84,-33.2,17.62,2020-01,79
+VTV,Style,Large value,0.04,12.38,16.13,0.77,-23.1,12.34,2020-01,79
+AVUV,Style,Small value (Avantis),0.25,15.54,28.62,0.54,-42.2,15.29,2020-01,79
+VBR,Style,Small value (Vanguard),0.07,11.44,21.9,0.52,-32.7,11.37,2020-01,79
+VIOV,Style,S&P 600 small value,0.1,10.2,24.32,0.42,-33.3,10.1,2020-01,79
+QQQ,US broad,"Nasdaq-100 (orig, 1999)",0.2,20.22,21.16,0.96,-32.6,20.02,2020-01,79
+VOO,US broad,S&P 500,0.03,15.32,17.07,0.9,-23.9,15.29,2020-01,79
+ONEQ,US broad,Nasdaq Composite,0.21,18.17,21.0,0.87,-32.1,17.96,2020-01,79
+IWB,US broad,Russell 1000,0.15,14.89,17.34,0.86,-24.6,14.74,2020-01,79
+VTI,US broad,US total market,0.03,14.74,17.52,0.84,-24.8,14.71,2020-01,79
+ITOT,US broad,US total market (iShares),0.03,14.71,17.53,0.84,-24.8,14.68,2020-01,79
+QQQM,US broad,Nasdaq-100,0.15,18.46,22.36,0.83,-33.1,18.31,2020-11,69
+DIA,US broad,Dow 30 (price-weighted),0.16,11.67,16.74,0.7,-21.9,11.51,2020-01,79
+IJH,US broad,S&P MidCap 400,0.05,11.18,20.52,0.54,-27.8,11.13,2020-01,79
+VXF,US broad,Extended mkt (VTI minus VOO),0.05,11.34,22.7,0.5,-33.2,11.29,2020-01,79
+IJR,US broad,S&P SmallCap 600,0.06,10.38,22.72,0.46,-30.0,10.32,2020-01,79
+IWM,US broad,Russell 2000 (small),0.19,10.27,22.93,0.45,-28.4,10.08,2020-01,79
