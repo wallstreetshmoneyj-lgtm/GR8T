@@ -73,6 +73,17 @@ PROVIDERS: dict[str, Provider] = {
 _client: httpx.Client | None = None
 _client_lock = threading.Lock()
 
+# When set, a cached response younger than this many seconds is used instead
+# of making a request. Off by default (scheduled jobs must fetch fresh data);
+# turned on by `--from-cache` so the owner can re-parse everything after a
+# parser fix without hitting SEC again — the reason SPEC 6 caches raw bodies.
+_cache_reuse_max_age: float | None = None
+
+
+def set_cache_reuse(max_age_seconds: float | None) -> None:
+    global _cache_reuse_max_age
+    _cache_reuse_max_age = max_age_seconds
+
 
 def _get_client() -> httpx.Client:
     global _client
@@ -111,6 +122,11 @@ def get(
     retries are exhausted (callers wrap per-item so one bad company never
     kills a batch job).
     """
+    if cache_key:
+        cached = _read_fresh_cache(provider, cache_key)
+        if cached is not None:
+            return cached
+
     prov = PROVIDERS[provider]
     headers = _headers_for(provider)
     client = _get_client()
@@ -140,6 +156,25 @@ def get(
                 log.warning("GET %s failed (%s), retry in %ss", url, exc, delay)
                 time.sleep(delay)
     raise last_exc  # type: ignore[misc]
+
+
+def _read_fresh_cache(provider: str, cache_key: str) -> bytes | None:
+    """Cached body if reuse is enabled and the entry is young enough."""
+    if _cache_reuse_max_age is None:
+        return None
+    body_path, meta_path = _cache_paths(provider, cache_key)
+    if not body_path.exists() or not meta_path.exists():
+        return None
+    try:
+        meta = json.loads(meta_path.read_text())
+        fetched_at = datetime.fromisoformat(meta["fetched_at"])
+    except (json.JSONDecodeError, KeyError, ValueError):
+        return None
+    age = (datetime.now(UTC) - fetched_at).total_seconds()
+    if age > _cache_reuse_max_age:
+        return None
+    log.info("cache hit %s/%s (age %.0fs)", provider, cache_key, age)
+    return body_path.read_bytes()
 
 
 def _write_cache(provider: str, cache_key: str, url: str, status: int, body: bytes) -> None:

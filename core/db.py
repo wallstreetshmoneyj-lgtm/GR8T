@@ -90,7 +90,11 @@ class Ratio(Base):
 
 class Filing(Base):
     __tablename__ = "filings"
-    __table_args__ = (UniqueConstraint("accession"),)
+    # Grain is (company, filing), NOT accession alone: one accession can be
+    # filed under several CIKs at once — a spin-off's filings appear under
+    # both companies (Abbott/AbbVie), and Form 4s appear under both the
+    # issuer and the reporting owner.
+    __table_args__ = (UniqueConstraint("cik", "accession"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     cik: Mapped[str] = mapped_column(String(10), ForeignKey("companies.cik"), index=True)

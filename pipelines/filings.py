@@ -41,6 +41,9 @@ def refresh_company(session: Session, cik: str, subs_json: dict | None = None) -
     for i, accession in enumerate(accessions):
         if accession in existing:
             continue
+        # Also guards against the same accession appearing twice inside one
+        # company's merged history (older submission files can overlap).
+        existing.add(accession)
         form = forms[i] if i < len(forms) else ""
         filed = _parse_date(filed_dates[i] if i < len(filed_dates) else None)
         if not form or filed is None:

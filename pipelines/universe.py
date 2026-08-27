@@ -113,8 +113,9 @@ def write_peers_seed(session: Session) -> Path:
     """Write peers.json if absent; otherwise write peers.candidate.json for
     manual review (hand-tuned peer sets must never be clobbered)."""
     peers = generate_peers(session)
-    target = PEERS_JSON if not PEERS_JSON.exists() else settings.seed_dir / "peers.candidate.json"
-    settings.seed_dir.mkdir(parents=True, exist_ok=True)
+    target = (PEERS_JSON if not PEERS_JSON.exists()
+              else PEERS_JSON.with_name("peers.candidate.json"))
+    target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(peers, indent=2) + "\n")
     log.info("wrote %s (%d companies)", target, len(peers))
     return target
