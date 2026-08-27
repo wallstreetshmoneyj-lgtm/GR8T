@@ -64,8 +64,24 @@ def test_duplicate_accession_within_one_payload_is_stored_once(db, orcl_company)
         assert len(session.execute(select(Filing)).scalars().all()) == 1
 
 
-def test_new_10k_triggers_a_statement_refresh(db, orcl_company):
+def _initial_load(session, cik: str) -> None:
+    filings.refresh_company(session, cik,
+                            subs_json=_one_filing("0001341439-25-000001", form="10-K",
+                                                  filed="2025-06-18"))
+
+
+def test_first_load_is_a_backfill_not_an_event(db, orcl_company):
+    """Every filing is 'new' on first load; reporting those as triggers would
+    stampede companyfacts for the whole universe on first run."""
     with db() as session:
+        assert filings.refresh_company(
+            session, orcl_company,
+            subs_json=_one_filing("0001341439-25-000001", form="10-K")) == []
+
+
+def test_a_genuinely_new_10k_triggers_a_statement_refresh(db, orcl_company):
+    with db() as session:
+        _initial_load(session, orcl_company)
         triggered = filings.refresh_company(
             session, orcl_company, subs_json=_one_filing("0001341439-26-000001", form="10-K"))
         assert triggered == ["10-K"]
@@ -75,8 +91,17 @@ def test_new_10k_triggers_a_statement_refresh(db, orcl_company):
             subs_json=_one_filing("0001341439-26-000001", form="10-K")) == []
 
 
+def test_a_new_10q_also_triggers(db, orcl_company):
+    with db() as session:
+        _initial_load(session, orcl_company)
+        assert filings.refresh_company(
+            session, orcl_company,
+            subs_json=_one_filing("0001341439-26-000005", form="10-Q")) == ["10-Q"]
+
+
 def test_routine_forms_do_not_trigger_a_statement_refresh(db, orcl_company):
     with db() as session:
+        _initial_load(session, orcl_company)
         assert filings.refresh_company(
             session, orcl_company, subs_json=_one_filing("0001341439-26-000009", form="4")) == []
 

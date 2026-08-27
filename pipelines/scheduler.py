@@ -68,10 +68,13 @@ def filings_refresh_job(tickers: list[str] | None = None) -> None:
     def work() -> str:
         with get_session_factory()() as session:
             result = filings.refresh_all(session, tickers=tickers)
-            # Event-driven statement refresh for companies with a new 10-K/10-Q.
-            for cik in result["new_statements_for"]:
+            # Event-driven statement refresh for companies with a new 10-K/10-Q
+            # (never on first load — see filings.refresh_company).
+            triggered = result["new_statements_for"]
+            for i, cik in enumerate(triggered, 1):
                 try:
                     statements.refresh_company(session, cik)
+                    log.info("event refresh [%d/%d] cik=%s ok", i, len(triggered), cik)
                 except Exception as exc:  # noqa: BLE001
                     session.rollback()
                     result["errors"].append(f"event refresh {cik}: {exc}")

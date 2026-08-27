@@ -43,8 +43,15 @@ def fetch_submissions(cik: str | int) -> dict:
         name = extra.get("name")
         if not name:
             continue
+        # Older history pages are immutable once published — a filing from
+        # 2003 never changes. Fetch each exactly once, ever, and serve it from
+        # cache forever after. Without this, the nightly job re-downloads
+        # decades of unchanged history for every company (20+ extra requests
+        # per night for a heavy filer like BAC), which is the opposite of the
+        # "cache aggressively" half of SEC fair access.
         older = http_client.get_json(
-            SUBMISSIONS_URL.format(name=name), "sec", cache_key=f"submissions_{name}"
+            SUBMISSIONS_URL.format(name=name), "sec", cache_key=f"submissions_{name}",
+            cache_max_age=float("inf"),
         )
         # Older pages are column-list dicts with the same keys as 'recent'.
         for key, values in older.items():

@@ -23,7 +23,14 @@ STATEMENT_TRIGGER_FORMS = {"10-K", "10-Q"}
 
 def refresh_company(session: Session, cik: str, subs_json: dict | None = None) -> list[str]:
     """Upsert all filings for one company. Returns the forms of newly seen
-    10-K/10-Q filings (empty list when nothing new)."""
+    10-K/10-Q filings (empty list when nothing new).
+
+    On a company's FIRST load every filing is "new", which is a backfill, not
+    an event. Reporting those as triggers would make the nightly filings job
+    pull companyfacts for all 500 companies on first run — work the
+    statements job is already doing. So triggers are only reported for a
+    company that already had filings stored.
+    """
     if subs_json is None:
         subs_json = edgar_client.fetch_submissions(cik)
     recent = subs_json.get("filings", {}).get("recent", {})
@@ -31,6 +38,7 @@ def refresh_company(session: Session, cik: str, subs_json: dict | None = None) -
     existing = set(
         session.execute(select(Filing.accession).where(Filing.cik == cik)).scalars()
     )
+    first_load = not existing
     new_trigger_forms: list[str] = []
 
     forms = recent.get("form", [])
@@ -53,7 +61,7 @@ def refresh_company(session: Session, cik: str, subs_json: dict | None = None) -
         url = edgar_client.archive_doc_url(cik, accession, primary_doc) if primary_doc else None
         session.add(Filing(cik=cik, form=form, filed_date=filed, period_of_report=period,
                            accession=accession, primary_doc_url=url))
-        if form in STATEMENT_TRIGGER_FORMS:
+        if form in STATEMENT_TRIGGER_FORMS and not first_load:
             new_trigger_forms.append(form)
     session.commit()
     return new_trigger_forms

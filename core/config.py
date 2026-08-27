@@ -22,7 +22,10 @@ def _env(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
 
 
-@dataclass(frozen=True)
+# Deliberately NOT frozen: tests need to point cache/data paths at a tmp dir,
+# and a single-user app has no real risk of stray runtime mutation. Treat it
+# as read-only in application code.
+@dataclass
 class Settings:
     # SEC requires a real contact identity in the User-Agent (fair-access policy).
     # Fetches against SEC hosts fail loudly if this is missing — see http_client.py.

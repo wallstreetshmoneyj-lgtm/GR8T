@@ -115,15 +115,22 @@ def get(
     provider: str,
     cache_key: str | None = None,
     params: dict[str, str] | None = None,
+    cache_max_age: float | None = None,
 ) -> bytes:
     """GET with rate limiting, retries, and raw-response caching.
+
+    cache_max_age: serve from cache when the cached copy is younger than this
+    many seconds. Pass `float("inf")` for content that is immutable once
+    published (old EDGAR history files), so it is fetched exactly once ever.
+    Defaults to the global `--from-cache` setting.
 
     Returns the response body bytes. Raises httpx.HTTPStatusError after
     retries are exhausted (callers wrap per-item so one bad company never
     kills a batch job).
     """
     if cache_key:
-        cached = _read_fresh_cache(provider, cache_key)
+        max_age = cache_max_age if cache_max_age is not None else _cache_reuse_max_age
+        cached = _read_fresh_cache(provider, cache_key, max_age)
         if cached is not None:
             return cached
 
@@ -158,9 +165,9 @@ def get(
     raise last_exc  # type: ignore[misc]
 
 
-def _read_fresh_cache(provider: str, cache_key: str) -> bytes | None:
+def _read_fresh_cache(provider: str, cache_key: str, max_age: float | None) -> bytes | None:
     """Cached body if reuse is enabled and the entry is young enough."""
-    if _cache_reuse_max_age is None:
+    if max_age is None:
         return None
     body_path, meta_path = _cache_paths(provider, cache_key)
     if not body_path.exists() or not meta_path.exists():
@@ -171,7 +178,7 @@ def _read_fresh_cache(provider: str, cache_key: str) -> bytes | None:
     except (json.JSONDecodeError, KeyError, ValueError):
         return None
     age = (datetime.now(UTC) - fetched_at).total_seconds()
-    if age > _cache_reuse_max_age:
+    if age > max_age:
         return None
     log.info("cache hit %s/%s (age %.0fs)", provider, cache_key, age)
     return body_path.read_bytes()
@@ -193,5 +200,7 @@ def get_json(
     provider: str,
     cache_key: str | None = None,
     params: dict[str, str] | None = None,
+    cache_max_age: float | None = None,
 ) -> dict:
-    return json.loads(get(url, provider, cache_key=cache_key, params=params))
+    return json.loads(get(url, provider, cache_key=cache_key, params=params,
+                          cache_max_age=cache_max_age))
