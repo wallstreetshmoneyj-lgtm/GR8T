@@ -39,9 +39,21 @@ MAX_ANNUAL_DAYS = 400
 
 # (canonical_item, [tag fallback chain]) in SPEC 10.1 display order.
 INCOME_STATEMENT_ITEMS: list[tuple[str, list[str]]] = [
+    # Two tags appended beyond the SPEC chain, both placed last so they only
+    # apply when nothing standard matched:
+    #   RevenuesNetOfInterestExpense — how investment banks state the top line
+    #     (Goldman, Morgan Stanley); without it their revenue row, and every
+    #     margin and multiple built on it, is empty.
+    #   RegulatedAndUnregulatedOperatingRevenue — the utilities' top line
+    #     (DTE, Xcel).
+    # Deliberately NOT added: InterestAndDividendIncomeOperating. Commercial
+    # banks tag gross interest income with it, which is not comparable to
+    # revenue anywhere else in the table — an honest "n/a" beats a number
+    # that would silently wreck every margin comparison.
     ("revenue", ["RevenueFromContractWithCustomerExcludingAssessedTax",
                  "RevenueFromContractWithCustomerIncludingAssessedTax",
-                 "Revenues", "SalesRevenueNet"]),
+                 "Revenues", "SalesRevenueNet", "RevenuesNetOfInterestExpense",
+                 "RegulatedAndUnregulatedOperatingRevenue"]),
     ("cost_of_revenue", ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsSold"]),
     ("gross_profit", ["GrossProfit"]),  # falls back to revenue - cost_of_revenue, see below
     ("rd_expense", ["ResearchAndDevelopmentExpense"]),
@@ -75,7 +87,8 @@ BALANCE_SHEET_ITEMS: list[tuple[str, list[str]]] = [
     # LongTermNotesPayable appended beyond the SPEC chain: Oracle (and others
     # that label the line "notes payable, non-current") report it instead of
     # LongTermDebtNoncurrent; without it total_debt silently loses ~$90B+.
-    ("long_term_debt", ["LongTermDebtNoncurrent", "LongTermDebt", "LongTermNotesPayable"]),
+    ("long_term_debt", ["LongTermDebtNoncurrent", "LongTermDebt", "LongTermNotesPayable",
+                        "LongTermDebtAndCapitalLeaseObligations"]),
     ("total_liabilities", ["Liabilities"]),
     ("total_equity", ["StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
                       "StockholdersEquity"]),

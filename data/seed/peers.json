@@ -1,0 +1,2510 @@
+{
+  "A": [
+    "TMO",
+    "DHR",
+    "IQV",
+    "MTD"
+  ],
+  "AAPL": [
+    "DELL",
+    "HPQ",
+    "HPE",
+    "SMCI"
+  ],
+  "ABBV": [
+    "AMGN",
+    "GILD",
+    "REGN",
+    "VRTX"
+  ],
+  "ABNB": [
+    "BKNG",
+    "CCL",
+    "MAR",
+    "RCL"
+  ],
+  "ABT": [
+    "MDT",
+    "SYK",
+    "BDX",
+    "GEHC"
+  ],
+  "ACGL": [
+    "PGR",
+    "ALL",
+    "CB",
+    "TRV"
+  ],
+  "ACN": [
+    "IBM",
+    "CTSH",
+    "IT"
+  ],
+  "ADBE": [
+    "ORCL",
+    "CRM",
+    "INTU",
+    "WDAY"
+  ],
+  "ADI": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "ADM": [
+    "BG"
+  ],
+  "ADP": [
+    "PAYX"
+  ],
+  "ADSK": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "AEE": [
+    "NEE",
+    "PCG",
+    "ED",
+    "D"
+  ],
+  "AEP": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "AES": [
+    "NRG"
+  ],
+  "AFL": [
+    "PRU",
+    "PFG",
+    "GL",
+    "MET"
+  ],
+  "AIG": [
+    "AIZ",
+    "L"
+  ],
+  "AIZ": [
+    "AIG",
+    "L"
+  ],
+  "AJG": [
+    "MRSH",
+    "AON",
+    "WTW",
+    "BRO"
+  ],
+  "AKAM": [
+    "GDDY",
+    "VRSN"
+  ],
+  "ALB": [
+    "LYB",
+    "SHW",
+    "ECL",
+    "PPG"
+  ],
+  "ALGN": [
+    "COO",
+    "WST"
+  ],
+  "ALL": [
+    "PGR",
+    "CB",
+    "TRV",
+    "ACGL"
+  ],
+  "ALLE": [
+    "FERG",
+    "JCI",
+    "CARR",
+    "TT"
+  ],
+  "AMAT": [
+    "LRCX",
+    "KLAC",
+    "Q",
+    "TER"
+  ],
+  "AMCR": [
+    "SW",
+    "IP",
+    "PKG",
+    "AVY"
+  ],
+  "AMD": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "AME": [
+    "ETN",
+    "EMR",
+    "VRT",
+    "ROK"
+  ],
+  "AMGN": [
+    "ABBV",
+    "GILD",
+    "REGN",
+    "VRTX"
+  ],
+  "AMP": [
+    "APO",
+    "BLK",
+    "BNY",
+    "KKR"
+  ],
+  "AMT": [
+    "SBAC",
+    "CCI"
+  ],
+  "AMZN": [
+    "EBAY"
+  ],
+  "ANET": [
+    "CSCO",
+    "MSI",
+    "CIEN",
+    "FFIV"
+  ],
+  "AON": [
+    "MRSH",
+    "AJG",
+    "WTW",
+    "BRO"
+  ],
+  "AOS": [
+    "FERG",
+    "JCI",
+    "CARR",
+    "TT"
+  ],
+  "APA": [
+    "COP",
+    "EOG",
+    "OXY",
+    "DVN"
+  ],
+  "APD": [
+    "LIN"
+  ],
+  "APH": [
+    "GLW",
+    "COHR"
+  ],
+  "APO": [
+    "BLK",
+    "BNY",
+    "KKR",
+    "AMP"
+  ],
+  "APP": [
+    "OMC",
+    "TTD"
+  ],
+  "APTV": [],
+  "ARE": [
+    "BXP"
+  ],
+  "ARES": [
+    "APO",
+    "BLK",
+    "BNY",
+    "KKR"
+  ],
+  "ATO": [],
+  "AVGO": [
+    "NVDA",
+    "INTC",
+    "QCOM",
+    "MU"
+  ],
+  "AVY": [
+    "SW",
+    "IP",
+    "AMCR",
+    "PKG"
+  ],
+  "AWK": [],
+  "AXON": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "AXP": [
+    "COF",
+    "SYF"
+  ],
+  "AZO": [
+    "CVNA",
+    "ORLY"
+  ],
+  "BA": [
+    "RTX",
+    "LMT",
+    "GD",
+    "GE"
+  ],
+  "BAC": [
+    "JPM",
+    "C",
+    "WFC",
+    "USB"
+  ],
+  "BALL": [],
+  "BAX": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "BBY": [],
+  "BDX": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "GEHC"
+  ],
+  "BEN": [
+    "APO",
+    "BLK",
+    "BNY",
+    "KKR"
+  ],
+  "BF-B": [
+    "STZ"
+  ],
+  "BG": [
+    "ADM"
+  ],
+  "BIIB": [
+    "ABBV",
+    "AMGN",
+    "GILD",
+    "REGN"
+  ],
+  "BKNG": [
+    "CCL",
+    "MAR",
+    "RCL",
+    "EXPE"
+  ],
+  "BKR": [
+    "SLB",
+    "HAL"
+  ],
+  "BLDR": [
+    "FERG",
+    "JCI",
+    "CARR",
+    "TT"
+  ],
+  "BLK": [
+    "APO",
+    "BNY",
+    "KKR",
+    "AMP"
+  ],
+  "BMY": [
+    "JNJ",
+    "LLY",
+    "MRK",
+    "PFE"
+  ],
+  "BNY": [
+    "APO",
+    "BLK",
+    "KKR",
+    "AMP"
+  ],
+  "BR": [],
+  "BRK-B": [],
+  "BRO": [
+    "MRSH",
+    "AON",
+    "AJG",
+    "WTW"
+  ],
+  "BSX": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "BX": [
+    "APO",
+    "BLK",
+    "BNY",
+    "KKR"
+  ],
+  "BXP": [
+    "ARE"
+  ],
+  "C": [
+    "JPM",
+    "BAC",
+    "WFC",
+    "USB"
+  ],
+  "CAH": [
+    "MCK",
+    "COR",
+    "HSIC"
+  ],
+  "CARR": [
+    "FERG",
+    "JCI",
+    "TT",
+    "BLDR"
+  ],
+  "CASY": [
+    "KR"
+  ],
+  "CAT": [
+    "CMI",
+    "PCAR",
+    "WAB"
+  ],
+  "CB": [
+    "PGR",
+    "ALL",
+    "TRV",
+    "ACGL"
+  ],
+  "CBOE": [
+    "SPGI",
+    "ICE",
+    "NDAQ",
+    "MCO"
+  ],
+  "CBRE": [
+    "CSGP"
+  ],
+  "CCI": [
+    "AMT",
+    "SBAC"
+  ],
+  "CCL": [
+    "BKNG",
+    "MAR",
+    "RCL",
+    "EXPE"
+  ],
+  "CDNS": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "CDW": [],
+  "CEG": [
+    "DUK",
+    "SO",
+    "EXC",
+    "AEP"
+  ],
+  "CF": [
+    "CTVA",
+    "MOS"
+  ],
+  "CFG": [
+    "KEY",
+    "MTB",
+    "HBAN",
+    "FITB"
+  ],
+  "CHD": [
+    "CL",
+    "KMB",
+    "CLX"
+  ],
+  "CHRW": [
+    "FDX",
+    "UPS",
+    "EXPD"
+  ],
+  "CHTR": [
+    "CMCSA"
+  ],
+  "CI": [
+    "CVS",
+    "LH",
+    "DVA",
+    "DGX"
+  ],
+  "CIEN": [
+    "CSCO",
+    "MSI",
+    "ANET",
+    "FFIV"
+  ],
+  "CINF": [
+    "PGR",
+    "ALL",
+    "CB",
+    "TRV"
+  ],
+  "CL": [
+    "KMB",
+    "CLX",
+    "CHD"
+  ],
+  "CLX": [
+    "CL",
+    "KMB",
+    "CHD"
+  ],
+  "CMCSA": [
+    "CHTR"
+  ],
+  "CME": [
+    "SPGI",
+    "ICE",
+    "NDAQ",
+    "MCO"
+  ],
+  "CMG": [
+    "SBUX",
+    "MCD",
+    "DRI",
+    "YUM"
+  ],
+  "CMI": [
+    "CAT",
+    "PCAR",
+    "WAB"
+  ],
+  "CMS": [
+    "NEE",
+    "PCG",
+    "ED",
+    "D"
+  ],
+  "CNC": [
+    "UNH",
+    "ELV",
+    "HUM"
+  ],
+  "CNP": [
+    "NEE",
+    "PCG",
+    "ED",
+    "D"
+  ],
+  "COF": [
+    "AXP",
+    "SYF"
+  ],
+  "COHR": [
+    "APH",
+    "GLW"
+  ],
+  "COIN": [
+    "SPGI",
+    "ICE",
+    "NDAQ",
+    "MCO"
+  ],
+  "COO": [
+    "ALGN",
+    "WST"
+  ],
+  "COP": [
+    "EOG",
+    "OXY",
+    "DVN",
+    "FANG"
+  ],
+  "COR": [
+    "MCK",
+    "CAH",
+    "HSIC"
+  ],
+  "COST": [
+    "WMT",
+    "TGT",
+    "DG",
+    "DLTR"
+  ],
+  "CPAY": [
+    "V",
+    "PYPL",
+    "MA",
+    "XYZ"
+  ],
+  "CPRT": [
+    "LDOS",
+    "CTAS"
+  ],
+  "CPT": [
+    "MAA",
+    "UDR",
+    "ESS",
+    "VMRK"
+  ],
+  "CRH": [
+    "VMC",
+    "MLM"
+  ],
+  "CRL": [
+    "TMO",
+    "DHR",
+    "IQV",
+    "A"
+  ],
+  "CRM": [
+    "ORCL",
+    "ADBE",
+    "INTU",
+    "WDAY"
+  ],
+  "CRWD": [
+    "MSFT",
+    "NOW",
+    "PANW",
+    "FTNT"
+  ],
+  "CSCO": [
+    "MSI",
+    "ANET",
+    "CIEN",
+    "FFIV"
+  ],
+  "CSGP": [
+    "CBRE"
+  ],
+  "CSX": [
+    "UNP",
+    "NSC"
+  ],
+  "CTAS": [
+    "LDOS",
+    "CPRT"
+  ],
+  "CTSH": [
+    "ACN",
+    "IBM",
+    "IT"
+  ],
+  "CTVA": [
+    "MOS",
+    "CF"
+  ],
+  "CVNA": [
+    "AZO",
+    "ORLY"
+  ],
+  "CVS": [
+    "CI",
+    "LH",
+    "DVA",
+    "DGX"
+  ],
+  "CVX": [
+    "XOM"
+  ],
+  "D": [
+    "NEE",
+    "PCG",
+    "ED",
+    "DTE"
+  ],
+  "DAL": [
+    "UAL",
+    "LUV"
+  ],
+  "DASH": [],
+  "DD": [
+    "HON",
+    "MMM"
+  ],
+  "DDOG": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "DE": [],
+  "DECK": [],
+  "DELL": [
+    "AAPL",
+    "HPQ",
+    "HPE",
+    "SMCI"
+  ],
+  "DG": [
+    "WMT",
+    "COST",
+    "TGT",
+    "DLTR"
+  ],
+  "DGX": [
+    "CVS",
+    "CI",
+    "LH",
+    "DVA"
+  ],
+  "DHI": [
+    "LEN",
+    "PHM",
+    "NVR"
+  ],
+  "DHR": [
+    "TMO",
+    "IQV",
+    "A",
+    "MTD"
+  ],
+  "DIS": [
+    "NFLX",
+    "LYV",
+    "TKO",
+    "PSKY"
+  ],
+  "DLR": [
+    "EQIX"
+  ],
+  "DLTR": [
+    "WMT",
+    "COST",
+    "TGT",
+    "DG"
+  ],
+  "DOC": [
+    "WELL",
+    "VTR"
+  ],
+  "DOV": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "DOW": [],
+  "DPZ": [
+    "SBUX",
+    "MCD",
+    "DRI",
+    "CMG"
+  ],
+  "DRI": [
+    "SBUX",
+    "MCD",
+    "CMG",
+    "YUM"
+  ],
+  "DTE": [
+    "NEE",
+    "PCG",
+    "ED",
+    "D"
+  ],
+  "DUK": [
+    "SO",
+    "EXC",
+    "CEG",
+    "AEP"
+  ],
+  "DVA": [
+    "CVS",
+    "CI",
+    "LH",
+    "DGX"
+  ],
+  "DVN": [
+    "COP",
+    "EOG",
+    "OXY",
+    "FANG"
+  ],
+  "DXCM": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "EBAY": [
+    "AMZN"
+  ],
+  "ECHO": [
+    "TMUS"
+  ],
+  "ECL": [
+    "LYB",
+    "SHW",
+    "PPG",
+    "IFF"
+  ],
+  "ED": [
+    "NEE",
+    "PCG",
+    "D",
+    "DTE"
+  ],
+  "EFX": [
+    "VRSK"
+  ],
+  "EG": [],
+  "EIX": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "EL": [
+    "PG",
+    "KVUE"
+  ],
+  "ELV": [
+    "UNH",
+    "CNC",
+    "HUM"
+  ],
+  "EME": [
+    "PWR",
+    "J",
+    "FIX"
+  ],
+  "EMR": [
+    "ETN",
+    "VRT",
+    "ROK",
+    "AME"
+  ],
+  "EOG": [
+    "COP",
+    "OXY",
+    "DVN",
+    "FANG"
+  ],
+  "EQIX": [
+    "DLR"
+  ],
+  "EQT": [
+    "COP",
+    "EOG",
+    "OXY",
+    "DVN"
+  ],
+  "ERIE": [
+    "MRSH",
+    "AON",
+    "AJG",
+    "WTW"
+  ],
+  "ES": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "ESS": [
+    "MAA",
+    "CPT",
+    "UDR",
+    "VMRK"
+  ],
+  "ETN": [
+    "EMR",
+    "VRT",
+    "ROK",
+    "AME"
+  ],
+  "ETR": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "EVRG": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "EW": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "EXC": [
+    "DUK",
+    "SO",
+    "CEG",
+    "AEP"
+  ],
+  "EXE": [
+    "COP",
+    "EOG",
+    "OXY",
+    "DVN"
+  ],
+  "EXPD": [
+    "FDX",
+    "UPS",
+    "CHRW"
+  ],
+  "EXPE": [
+    "BKNG",
+    "CCL",
+    "MAR",
+    "RCL"
+  ],
+  "EXR": [
+    "PSA"
+  ],
+  "F": [
+    "GM",
+    "TSLA"
+  ],
+  "FANG": [
+    "COP",
+    "EOG",
+    "OXY",
+    "DVN"
+  ],
+  "FAST": [
+    "URI"
+  ],
+  "FCX": [],
+  "FDS": [
+    "SPGI",
+    "ICE",
+    "NDAQ",
+    "MCO"
+  ],
+  "FDX": [
+    "UPS",
+    "CHRW",
+    "EXPD"
+  ],
+  "FDXF": [
+    "JBHT",
+    "ODFL"
+  ],
+  "FE": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "FERG": [
+    "JCI",
+    "CARR",
+    "TT",
+    "BLDR"
+  ],
+  "FFIV": [
+    "CSCO",
+    "MSI",
+    "ANET",
+    "CIEN"
+  ],
+  "FICO": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "FIS": [
+    "V",
+    "PYPL",
+    "MA",
+    "XYZ"
+  ],
+  "FISV": [
+    "V",
+    "PYPL",
+    "MA",
+    "XYZ"
+  ],
+  "FITB": [
+    "KEY",
+    "MTB",
+    "CFG",
+    "HBAN"
+  ],
+  "FIX": [
+    "PWR",
+    "EME",
+    "J"
+  ],
+  "FLEX": [
+    "JBL",
+    "TEL"
+  ],
+  "FOXA": [
+    "WBD"
+  ],
+  "FRT": [
+    "SPG",
+    "O",
+    "KIM",
+    "REG"
+  ],
+  "FSLR": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "FTNT": [
+    "MSFT",
+    "NOW",
+    "PANW",
+    "GEN"
+  ],
+  "FTV": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "GD": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GE"
+  ],
+  "GDDY": [
+    "AKAM",
+    "VRSN"
+  ],
+  "GE": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "GEHC": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "GEN": [
+    "MSFT",
+    "NOW",
+    "PANW",
+    "FTNT"
+  ],
+  "GEV": [
+    "GNRC"
+  ],
+  "GILD": [
+    "ABBV",
+    "AMGN",
+    "REGN",
+    "VRTX"
+  ],
+  "GIS": [
+    "TSN",
+    "MDLZ",
+    "KHC",
+    "HRL"
+  ],
+  "GL": [
+    "PRU",
+    "AFL",
+    "PFG",
+    "MET"
+  ],
+  "GLW": [
+    "APH",
+    "COHR"
+  ],
+  "GM": [
+    "F",
+    "TSLA"
+  ],
+  "GNRC": [
+    "GEV"
+  ],
+  "GOOGL": [
+    "META",
+    "RDDT"
+  ],
+  "GPC": [],
+  "GPN": [
+    "V",
+    "PYPL",
+    "MA",
+    "XYZ"
+  ],
+  "GRMN": [],
+  "GS": [
+    "MS",
+    "SCHW",
+    "RJF",
+    "HOOD"
+  ],
+  "GWW": [
+    "PH",
+    "ITW",
+    "SWK",
+    "OTIS"
+  ],
+  "HAL": [
+    "SLB",
+    "BKR"
+  ],
+  "HAS": [],
+  "HBAN": [
+    "KEY",
+    "MTB",
+    "CFG",
+    "FITB"
+  ],
+  "HCA": [
+    "UHS"
+  ],
+  "HD": [
+    "LOW"
+  ],
+  "HIG": [
+    "PGR",
+    "ALL",
+    "CB",
+    "TRV"
+  ],
+  "HII": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "HLT": [
+    "BKNG",
+    "CCL",
+    "MAR",
+    "RCL"
+  ],
+  "HON": [
+    "MMM",
+    "DD"
+  ],
+  "HONA": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "HOOD": [
+    "MS",
+    "GS",
+    "SCHW",
+    "RJF"
+  ],
+  "HPE": [
+    "AAPL",
+    "DELL",
+    "HPQ",
+    "SMCI"
+  ],
+  "HPQ": [
+    "AAPL",
+    "DELL",
+    "HPE",
+    "SMCI"
+  ],
+  "HRL": [
+    "TSN",
+    "MDLZ",
+    "KHC",
+    "GIS"
+  ],
+  "HSIC": [
+    "MCK",
+    "COR",
+    "CAH"
+  ],
+  "HST": [
+    "VICI"
+  ],
+  "HSY": [
+    "TSN",
+    "MDLZ",
+    "KHC",
+    "GIS"
+  ],
+  "HUBB": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "HUM": [
+    "UNH",
+    "ELV",
+    "CNC"
+  ],
+  "HWM": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "IBKR": [
+    "MS",
+    "GS",
+    "SCHW",
+    "RJF"
+  ],
+  "IBM": [
+    "ACN",
+    "CTSH",
+    "IT"
+  ],
+  "ICE": [
+    "SPGI",
+    "NDAQ",
+    "MCO",
+    "COIN"
+  ],
+  "IDXX": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "IEX": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "IFF": [
+    "LYB",
+    "SHW",
+    "ECL",
+    "PPG"
+  ],
+  "INCY": [
+    "ABBV",
+    "AMGN",
+    "GILD",
+    "REGN"
+  ],
+  "INTC": [
+    "NVDA",
+    "AVGO",
+    "QCOM",
+    "MU"
+  ],
+  "INTU": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "WDAY"
+  ],
+  "INVH": [],
+  "IP": [
+    "SW",
+    "AMCR",
+    "PKG",
+    "AVY"
+  ],
+  "IQV": [
+    "TMO",
+    "DHR",
+    "A",
+    "MTD"
+  ],
+  "IR": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "IRM": [],
+  "ISRG": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "IT": [
+    "ACN",
+    "IBM",
+    "CTSH"
+  ],
+  "ITW": [
+    "PH",
+    "GWW",
+    "SWK",
+    "OTIS"
+  ],
+  "IVZ": [
+    "APO",
+    "BLK",
+    "BNY",
+    "KKR"
+  ],
+  "J": [
+    "PWR",
+    "EME",
+    "FIX"
+  ],
+  "JBHT": [
+    "FDXF",
+    "ODFL"
+  ],
+  "JBL": [
+    "FLEX",
+    "TEL"
+  ],
+  "JCI": [
+    "FERG",
+    "CARR",
+    "TT",
+    "BLDR"
+  ],
+  "JKHY": [
+    "V",
+    "PYPL",
+    "MA",
+    "XYZ"
+  ],
+  "JNJ": [
+    "LLY",
+    "MRK",
+    "PFE",
+    "BMY"
+  ],
+  "JPM": [
+    "BAC",
+    "C",
+    "WFC",
+    "USB"
+  ],
+  "KDP": [
+    "PEP",
+    "KO",
+    "MNST"
+  ],
+  "KEY": [
+    "MTB",
+    "CFG",
+    "HBAN",
+    "FITB"
+  ],
+  "KEYS": [
+    "ROP",
+    "TDY",
+    "ZBRA"
+  ],
+  "KHC": [
+    "TSN",
+    "MDLZ",
+    "GIS",
+    "HRL"
+  ],
+  "KIM": [
+    "SPG",
+    "O",
+    "REG",
+    "FRT"
+  ],
+  "KKR": [
+    "APO",
+    "BLK",
+    "BNY",
+    "AMP"
+  ],
+  "KLAC": [
+    "AMAT",
+    "LRCX",
+    "Q",
+    "TER"
+  ],
+  "KMB": [
+    "CL",
+    "CLX",
+    "CHD"
+  ],
+  "KMI": [
+    "OKE",
+    "TRGP",
+    "WMB"
+  ],
+  "KO": [
+    "PEP",
+    "KDP",
+    "MNST"
+  ],
+  "KR": [
+    "CASY"
+  ],
+  "KVUE": [
+    "PG",
+    "EL"
+  ],
+  "L": [
+    "AIG",
+    "AIZ"
+  ],
+  "LDOS": [
+    "CTAS",
+    "CPRT"
+  ],
+  "LEN": [
+    "DHI",
+    "PHM",
+    "NVR"
+  ],
+  "LH": [
+    "CVS",
+    "CI",
+    "DVA",
+    "DGX"
+  ],
+  "LHX": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "LII": [
+    "FERG",
+    "JCI",
+    "CARR",
+    "TT"
+  ],
+  "LIN": [
+    "APD"
+  ],
+  "LITE": [
+    "CSCO",
+    "MSI",
+    "ANET",
+    "CIEN"
+  ],
+  "LLY": [
+    "JNJ",
+    "MRK",
+    "PFE",
+    "BMY"
+  ],
+  "LMT": [
+    "BA",
+    "RTX",
+    "GD",
+    "GE"
+  ],
+  "LNT": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "LOW": [
+    "HD"
+  ],
+  "LRCX": [
+    "AMAT",
+    "KLAC",
+    "Q",
+    "TER"
+  ],
+  "LULU": [
+    "NKE",
+    "RL",
+    "TPR"
+  ],
+  "LUV": [
+    "DAL",
+    "UAL"
+  ],
+  "LVS": [
+    "MGM",
+    "WYNN"
+  ],
+  "LYB": [
+    "SHW",
+    "ECL",
+    "PPG",
+    "IFF"
+  ],
+  "LYV": [
+    "DIS",
+    "NFLX",
+    "TKO",
+    "PSKY"
+  ],
+  "MA": [
+    "V",
+    "PYPL",
+    "XYZ",
+    "FISV"
+  ],
+  "MAA": [
+    "CPT",
+    "UDR",
+    "ESS",
+    "VMRK"
+  ],
+  "MAR": [
+    "BKNG",
+    "CCL",
+    "RCL",
+    "EXPE"
+  ],
+  "MAS": [
+    "FERG",
+    "JCI",
+    "CARR",
+    "TT"
+  ],
+  "MCD": [
+    "SBUX",
+    "DRI",
+    "CMG",
+    "YUM"
+  ],
+  "MCHP": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "MCK": [
+    "COR",
+    "CAH",
+    "HSIC"
+  ],
+  "MCO": [
+    "SPGI",
+    "ICE",
+    "NDAQ",
+    "COIN"
+  ],
+  "MDLZ": [
+    "TSN",
+    "KHC",
+    "GIS",
+    "HRL"
+  ],
+  "MDT": [
+    "ABT",
+    "SYK",
+    "BDX",
+    "GEHC"
+  ],
+  "MET": [
+    "PRU",
+    "AFL",
+    "PFG",
+    "GL"
+  ],
+  "META": [
+    "GOOGL",
+    "RDDT"
+  ],
+  "MGM": [
+    "LVS",
+    "WYNN"
+  ],
+  "MKC": [
+    "TSN",
+    "MDLZ",
+    "KHC",
+    "GIS"
+  ],
+  "MLM": [
+    "CRH",
+    "VMC"
+  ],
+  "MMM": [
+    "HON",
+    "DD"
+  ],
+  "MNST": [
+    "PEP",
+    "KO",
+    "KDP"
+  ],
+  "MO": [
+    "PM"
+  ],
+  "MOS": [
+    "CTVA",
+    "CF"
+  ],
+  "MPC": [
+    "PSX",
+    "VLO"
+  ],
+  "MPWR": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "MRK": [
+    "JNJ",
+    "LLY",
+    "PFE",
+    "BMY"
+  ],
+  "MRNA": [
+    "ABBV",
+    "AMGN",
+    "GILD",
+    "REGN"
+  ],
+  "MRSH": [
+    "AON",
+    "AJG",
+    "WTW",
+    "BRO"
+  ],
+  "MRVL": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "MS": [
+    "GS",
+    "SCHW",
+    "RJF",
+    "HOOD"
+  ],
+  "MSCI": [
+    "SPGI",
+    "ICE",
+    "NDAQ",
+    "MCO"
+  ],
+  "MSFT": [
+    "NOW",
+    "PANW",
+    "FTNT",
+    "GEN"
+  ],
+  "MSI": [
+    "CSCO",
+    "ANET",
+    "CIEN",
+    "FFIV"
+  ],
+  "MTB": [
+    "KEY",
+    "CFG",
+    "HBAN",
+    "FITB"
+  ],
+  "MTD": [
+    "TMO",
+    "DHR",
+    "IQV",
+    "A"
+  ],
+  "MU": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "NCLH": [
+    "BKNG",
+    "CCL",
+    "MAR",
+    "RCL"
+  ],
+  "NDAQ": [
+    "SPGI",
+    "ICE",
+    "MCO",
+    "COIN"
+  ],
+  "NDSN": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "NEE": [
+    "PCG",
+    "ED",
+    "D",
+    "DTE"
+  ],
+  "NEM": [],
+  "NFLX": [
+    "DIS",
+    "LYV",
+    "TKO",
+    "PSKY"
+  ],
+  "NI": [
+    "NEE",
+    "PCG",
+    "ED",
+    "D"
+  ],
+  "NKE": [
+    "LULU",
+    "RL",
+    "TPR"
+  ],
+  "NOC": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "NOW": [
+    "MSFT",
+    "PANW",
+    "FTNT",
+    "GEN"
+  ],
+  "NRG": [
+    "AES"
+  ],
+  "NSC": [
+    "UNP",
+    "CSX"
+  ],
+  "NTAP": [
+    "AAPL",
+    "DELL",
+    "HPQ",
+    "HPE"
+  ],
+  "NTRS": [
+    "APO",
+    "BLK",
+    "BNY",
+    "KKR"
+  ],
+  "NUE": [
+    "STLD"
+  ],
+  "NVDA": [
+    "AVGO",
+    "INTC",
+    "QCOM",
+    "MU"
+  ],
+  "NVR": [
+    "DHI",
+    "LEN",
+    "PHM"
+  ],
+  "NWSA": [],
+  "NXPI": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "O": [
+    "SPG",
+    "KIM",
+    "REG",
+    "FRT"
+  ],
+  "ODFL": [
+    "JBHT",
+    "FDXF"
+  ],
+  "OKE": [
+    "TRGP",
+    "KMI",
+    "WMB"
+  ],
+  "OMC": [
+    "APP",
+    "TTD"
+  ],
+  "ON": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "ORCL": [
+    "MSFT",
+    "IBM",
+    "CRM",
+    "SAP"
+  ],
+  "ORLY": [
+    "CVNA",
+    "AZO"
+  ],
+  "OTIS": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "OXY": [
+    "COP",
+    "EOG",
+    "DVN",
+    "FANG"
+  ],
+  "PANW": [
+    "MSFT",
+    "NOW",
+    "FTNT",
+    "GEN"
+  ],
+  "PAYX": [
+    "ADP"
+  ],
+  "PCAR": [
+    "CAT",
+    "CMI",
+    "WAB"
+  ],
+  "PCG": [
+    "NEE",
+    "ED",
+    "D",
+    "DTE"
+  ],
+  "PEG": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "PEP": [
+    "KO",
+    "KDP",
+    "MNST"
+  ],
+  "PFE": [
+    "JNJ",
+    "LLY",
+    "MRK",
+    "BMY"
+  ],
+  "PFG": [
+    "PRU",
+    "AFL",
+    "GL",
+    "MET"
+  ],
+  "PG": [
+    "KVUE",
+    "EL"
+  ],
+  "PGR": [
+    "ALL",
+    "CB",
+    "TRV",
+    "ACGL"
+  ],
+  "PH": [
+    "GWW",
+    "ITW",
+    "SWK",
+    "OTIS"
+  ],
+  "PHM": [
+    "DHI",
+    "LEN",
+    "NVR"
+  ],
+  "PKG": [
+    "SW",
+    "IP",
+    "AMCR",
+    "AVY"
+  ],
+  "PLD": [],
+  "PLTR": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "PM": [
+    "MO"
+  ],
+  "PNC": [
+    "JPM",
+    "BAC",
+    "C",
+    "WFC"
+  ],
+  "PNR": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "PNW": [
+    "NEE",
+    "PCG",
+    "ED",
+    "D"
+  ],
+  "PODD": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "PPG": [
+    "LYB",
+    "SHW",
+    "ECL",
+    "IFF"
+  ],
+  "PPL": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "PRU": [
+    "AFL",
+    "PFG",
+    "GL",
+    "MET"
+  ],
+  "PSA": [
+    "EXR"
+  ],
+  "PSKY": [
+    "DIS",
+    "NFLX",
+    "LYV",
+    "TKO"
+  ],
+  "PSX": [
+    "MPC",
+    "VLO"
+  ],
+  "PTC": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "PWR": [
+    "EME",
+    "J",
+    "FIX"
+  ],
+  "PYPL": [
+    "V",
+    "MA",
+    "XYZ",
+    "FISV"
+  ],
+  "Q": [
+    "AMAT",
+    "LRCX",
+    "KLAC",
+    "TER"
+  ],
+  "QCOM": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "MU"
+  ],
+  "RCL": [
+    "BKNG",
+    "CCL",
+    "MAR",
+    "EXPE"
+  ],
+  "RDDT": [
+    "GOOGL",
+    "META"
+  ],
+  "REG": [
+    "SPG",
+    "O",
+    "KIM",
+    "FRT"
+  ],
+  "REGN": [
+    "ABBV",
+    "AMGN",
+    "GILD",
+    "VRTX"
+  ],
+  "RF": [
+    "KEY",
+    "MTB",
+    "CFG",
+    "HBAN"
+  ],
+  "RJF": [
+    "MS",
+    "GS",
+    "SCHW",
+    "HOOD"
+  ],
+  "RL": [
+    "NKE",
+    "LULU",
+    "TPR"
+  ],
+  "RMD": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "ROK": [
+    "ETN",
+    "EMR",
+    "VRT",
+    "AME"
+  ],
+  "ROL": [
+    "WM",
+    "RSG",
+    "VLTO"
+  ],
+  "ROP": [
+    "TDY",
+    "ZBRA",
+    "KEYS"
+  ],
+  "ROST": [
+    "TJX"
+  ],
+  "RSG": [
+    "WM",
+    "VLTO",
+    "ROL"
+  ],
+  "RTX": [
+    "BA",
+    "LMT",
+    "GD",
+    "GE"
+  ],
+  "RVTY": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "SBAC": [
+    "AMT",
+    "CCI"
+  ],
+  "SBUX": [
+    "MCD",
+    "DRI",
+    "CMG",
+    "YUM"
+  ],
+  "SCHW": [
+    "MS",
+    "GS",
+    "RJF",
+    "HOOD"
+  ],
+  "SHW": [
+    "LYB",
+    "ECL",
+    "PPG",
+    "IFF"
+  ],
+  "SJM": [
+    "TSN",
+    "MDLZ",
+    "KHC",
+    "GIS"
+  ],
+  "SLB": [
+    "BKR",
+    "HAL"
+  ],
+  "SMCI": [
+    "AAPL",
+    "DELL",
+    "HPQ",
+    "HPE"
+  ],
+  "SNA": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "SNDK": [
+    "AAPL",
+    "DELL",
+    "HPQ",
+    "HPE"
+  ],
+  "SNPS": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "SO": [
+    "DUK",
+    "EXC",
+    "CEG",
+    "AEP"
+  ],
+  "SOLV": [
+    "VEEV"
+  ],
+  "SPG": [
+    "O",
+    "KIM",
+    "REG",
+    "FRT"
+  ],
+  "SPGI": [
+    "ICE",
+    "NDAQ",
+    "MCO",
+    "COIN"
+  ],
+  "SRE": [
+    "NEE",
+    "PCG",
+    "ED",
+    "D"
+  ],
+  "STE": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "STLD": [
+    "NUE"
+  ],
+  "STT": [
+    "APO",
+    "BLK",
+    "BNY",
+    "KKR"
+  ],
+  "STX": [
+    "AAPL",
+    "DELL",
+    "HPQ",
+    "HPE"
+  ],
+  "STZ": [
+    "BF-B"
+  ],
+  "SW": [
+    "IP",
+    "AMCR",
+    "PKG",
+    "AVY"
+  ],
+  "SWK": [
+    "PH",
+    "GWW",
+    "ITW",
+    "OTIS"
+  ],
+  "SWKS": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "SYF": [
+    "AXP",
+    "COF"
+  ],
+  "SYK": [
+    "ABT",
+    "MDT",
+    "BDX",
+    "GEHC"
+  ],
+  "SYY": [],
+  "T": [
+    "VZ"
+  ],
+  "TAP": [],
+  "TDG": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "TDY": [
+    "ROP",
+    "ZBRA",
+    "KEYS"
+  ],
+  "TECH": [
+    "TMO",
+    "DHR",
+    "IQV",
+    "A"
+  ],
+  "TEL": [
+    "JBL",
+    "FLEX"
+  ],
+  "TER": [
+    "AMAT",
+    "LRCX",
+    "KLAC",
+    "Q"
+  ],
+  "TFC": [
+    "JPM",
+    "BAC",
+    "C",
+    "WFC"
+  ],
+  "TGT": [
+    "WMT",
+    "COST",
+    "DG",
+    "DLTR"
+  ],
+  "TJX": [
+    "ROST"
+  ],
+  "TKO": [
+    "DIS",
+    "NFLX",
+    "LYV",
+    "PSKY"
+  ],
+  "TMO": [
+    "DHR",
+    "IQV",
+    "A",
+    "MTD"
+  ],
+  "TMUS": [
+    "ECHO"
+  ],
+  "TPL": [
+    "COP",
+    "EOG",
+    "OXY",
+    "DVN"
+  ],
+  "TPR": [
+    "NKE",
+    "LULU",
+    "RL"
+  ],
+  "TRGP": [
+    "OKE",
+    "KMI",
+    "WMB"
+  ],
+  "TRMB": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "TROW": [
+    "APO",
+    "BLK",
+    "BNY",
+    "KKR"
+  ],
+  "TRV": [
+    "PGR",
+    "ALL",
+    "CB",
+    "ACGL"
+  ],
+  "TSCO": [
+    "ULTA"
+  ],
+  "TSLA": [
+    "F",
+    "GM"
+  ],
+  "TSN": [
+    "MDLZ",
+    "KHC",
+    "GIS",
+    "HRL"
+  ],
+  "TT": [
+    "FERG",
+    "JCI",
+    "CARR",
+    "BLDR"
+  ],
+  "TTD": [
+    "OMC",
+    "APP"
+  ],
+  "TTWO": [],
+  "TXN": [
+    "NVDA",
+    "AVGO",
+    "INTC",
+    "QCOM"
+  ],
+  "TXT": [
+    "BA",
+    "RTX",
+    "LMT",
+    "GD"
+  ],
+  "TYL": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "UAL": [
+    "DAL",
+    "LUV"
+  ],
+  "UBER": [],
+  "UDR": [
+    "MAA",
+    "CPT",
+    "ESS",
+    "VMRK"
+  ],
+  "UHS": [
+    "HCA"
+  ],
+  "ULTA": [
+    "TSCO"
+  ],
+  "UNH": [
+    "ELV",
+    "CNC",
+    "HUM"
+  ],
+  "UNP": [
+    "CSX",
+    "NSC"
+  ],
+  "UPS": [
+    "FDX",
+    "CHRW",
+    "EXPD"
+  ],
+  "URI": [
+    "FAST"
+  ],
+  "USB": [
+    "JPM",
+    "BAC",
+    "C",
+    "WFC"
+  ],
+  "V": [
+    "PYPL",
+    "MA",
+    "XYZ",
+    "FISV"
+  ],
+  "VEEV": [
+    "SOLV"
+  ],
+  "VICI": [
+    "HST"
+  ],
+  "VLO": [
+    "MPC",
+    "PSX"
+  ],
+  "VLTO": [
+    "WM",
+    "RSG",
+    "ROL"
+  ],
+  "VMC": [
+    "CRH",
+    "MLM"
+  ],
+  "VMRK": [
+    "MAA",
+    "CPT",
+    "UDR",
+    "ESS"
+  ],
+  "VRSK": [
+    "EFX"
+  ],
+  "VRSN": [
+    "GDDY",
+    "AKAM"
+  ],
+  "VRT": [
+    "ETN",
+    "EMR",
+    "ROK",
+    "AME"
+  ],
+  "VRTX": [
+    "ABBV",
+    "AMGN",
+    "GILD",
+    "REGN"
+  ],
+  "VST": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "VTR": [
+    "WELL",
+    "DOC"
+  ],
+  "VTRS": [
+    "JNJ",
+    "LLY",
+    "MRK",
+    "PFE"
+  ],
+  "VZ": [
+    "T"
+  ],
+  "WAB": [
+    "CAT",
+    "CMI",
+    "PCAR"
+  ],
+  "WAT": [
+    "TMO",
+    "DHR",
+    "IQV",
+    "A"
+  ],
+  "WBD": [
+    "FOXA"
+  ],
+  "WDAY": [
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "INTU"
+  ],
+  "WDC": [
+    "AAPL",
+    "DELL",
+    "HPQ",
+    "HPE"
+  ],
+  "WEC": [
+    "DUK",
+    "SO",
+    "EXC",
+    "CEG"
+  ],
+  "WELL": [
+    "VTR",
+    "DOC"
+  ],
+  "WFC": [
+    "JPM",
+    "BAC",
+    "C",
+    "USB"
+  ],
+  "WM": [
+    "RSG",
+    "VLTO",
+    "ROL"
+  ],
+  "WMB": [
+    "OKE",
+    "TRGP",
+    "KMI"
+  ],
+  "WMT": [
+    "COST",
+    "TGT",
+    "DG",
+    "DLTR"
+  ],
+  "WRB": [
+    "PGR",
+    "ALL",
+    "CB",
+    "TRV"
+  ],
+  "WSM": [],
+  "WST": [
+    "COO",
+    "ALGN"
+  ],
+  "WTW": [
+    "MRSH",
+    "AON",
+    "AJG",
+    "BRO"
+  ],
+  "WY": [],
+  "WYNN": [
+    "MGM",
+    "LVS"
+  ],
+  "XEL": [
+    "NEE",
+    "PCG",
+    "ED",
+    "D"
+  ],
+  "XOM": [
+    "CVX"
+  ],
+  "XYL": [
+    "PH",
+    "GWW",
+    "ITW",
+    "SWK"
+  ],
+  "XYZ": [
+    "V",
+    "PYPL",
+    "MA",
+    "FISV"
+  ],
+  "YUM": [
+    "SBUX",
+    "MCD",
+    "DRI",
+    "CMG"
+  ],
+  "ZBH": [
+    "ABT",
+    "MDT",
+    "SYK",
+    "BDX"
+  ],
+  "ZBRA": [
+    "ROP",
+    "TDY",
+    "KEYS"
+  ],
+  "ZTS": [
+    "JNJ",
+    "LLY",
+    "MRK",
+    "PFE"
+  ]
+}
