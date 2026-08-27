@@ -34,16 +34,34 @@ def wanted_tags() -> set[str]:
     return tags
 
 
+# Facts ending before this are dropped: the mapper only ever looks at the six
+# most recent fiscal years, and full history makes the fixtures megabytes.
+EARLIEST_PERIOD_END = "2018-01-01"
+
+
 def trim_companyfacts(ticker: str, cik: str) -> None:
     src = settings.cache_dir / "sec" / f"companyfacts_CIK{cik}.json"
     data = json.loads(src.read_text())
     keep = wanted_tags()
     gaap = data.get("facts", {}).get("us-gaap", {})
-    data["facts"]["us-gaap"] = {tag: gaap[tag] for tag in sorted(keep) if tag in gaap}
-    data["facts"].pop("dei", None)
+
+    trimmed: dict[str, dict] = {}
+    for tag in sorted(keep):
+        tag_data = gaap.get(tag)
+        if not tag_data:
+            continue
+        units = {}
+        for unit, facts in tag_data.get("units", {}).items():
+            recent = [f for f in facts if (f.get("end") or "") >= EARLIEST_PERIOD_END]
+            if recent:
+                units[unit] = recent
+        if units:
+            trimmed[tag] = {**tag_data, "units": units}
+
+    data["facts"] = {"us-gaap": trimmed}
     out = FIXTURES_DIR / f"companyfacts_{ticker}.json"
-    out.write_text(json.dumps(data["facts"]["us-gaap"] and data, separators=(",", ":")))
-    print(f"{out}: {out.stat().st_size / 1024:.0f} KB, {len(data['facts']['us-gaap'])} tags")
+    out.write_text(json.dumps(data, separators=(",", ":")))
+    print(f"{out}: {out.stat().st_size / 1024:.0f} KB, {len(trimmed)} tags")
 
 
 # Keep enough of each form that the filings tab, its filter chips, and the
