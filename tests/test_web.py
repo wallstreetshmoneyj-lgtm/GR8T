@@ -159,6 +159,22 @@ class TestPagesWithData:
         html = loaded.get("/company/ORCL?tab=ratios&category=Profitability").text
         assert "non-positive average equity" in html
 
+    def test_na_reason_is_shown_once_at_the_first_na_year(self, loaded):
+        data = loaded.get("/api/company/ORCL/ratios?category=Profitability").json()
+        profitability = next(c for c in data["categories"] if c["name"] == "Profitability")
+
+        # ROE: only FY2023 is n/a, so the reason marks that year, not FY2026.
+        roe = next(r for r in profitability["ratios"] if r["key"] == "roe")
+        flagged = [c for c in roe["history"] if c.get("show_reason")]
+        assert len(flagged) == 1
+        assert flagged[0]["fy"] == 2023
+        assert flagged[0]["na_reason"] == "non-positive average equity"
+
+        # Gross margin: n/a for every year (Oracle reports no gross profit
+        # line), so the reason still appears exactly once.
+        gross = next(r for r in profitability["ratios"] if r["key"] == "gross_margin")
+        assert len([c for c in gross["history"] if c.get("show_reason")]) == 1
+
     def test_comps_table_includes_the_peer_set(self, loaded):
         # peers.json seeds ORCL as [MSFT, IBM, CRM, SAP] (SPEC 17.3)
         html = loaded.get("/company/ORCL/ratio/roe").text

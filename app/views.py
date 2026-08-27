@@ -265,6 +265,14 @@ def ratios_data(session: Session, cik: str, category: str | None = None) -> dict
                 for fy in years:
                     row = by_key.get(meta.key, {}).get(fy)
                     history.append(_ratio_cell(row, meta.fmt, fy))
+                # Print the n/a reason once per row, under the first year that
+                # is n/a — so "non-positive average equity" is visible on the
+                # one year it applies to, without repeating on a row that is
+                # n/a for all five years.
+                for cell in history:
+                    if cell["value"] is None and cell["na_reason"]:
+                        cell["show_reason"] = True
+                        break
                 entry["ratios"].append({**display, "history": history,
                                         "latest": history[0] if history else None})
         else:

@@ -38,6 +38,30 @@ class TestDerivedItems:
         vals = build_values(make_result([2026], {"operating_income": {2026: 100.0}}))
         assert 2026 not in vals.get("ebitda", {})
 
+    def test_ebit_falls_back_to_pretax_plus_interest(self):
+        # ~21% of the S&P 500 (IBM among them) never tag OperatingIncomeLoss.
+        vals = build_values(make_result([2026], {
+            "pretax_income": {2026: 900.0}, "interest_expense": {2026: 100.0}}))
+        assert vals["ebit"][2026] == 1000.0
+
+    def test_reported_operating_income_wins_over_the_fallback(self):
+        vals = build_values(make_result([2026], {
+            "operating_income": {2026: 1000.0},
+            "pretax_income": {2026: 500.0}, "interest_expense": {2026: 50.0}}))
+        assert vals["ebit"][2026] == 1000.0
+
+    def test_ebit_fallback_does_not_invent_an_operating_income_row(self):
+        """The derived analytic item is filled; the income statement line the
+        company never reported stays empty."""
+        vals = build_values(make_result([2026], {
+            "pretax_income": {2026: 900.0}, "interest_expense": {2026: 100.0}}))
+        assert vals["ebit"][2026] == 1000.0
+        assert 2026 not in vals.get("operating_income", {})
+
+    def test_ebit_is_absent_when_neither_source_is_available(self):
+        vals = build_values(make_result([2026], {"pretax_income": {2026: 900.0}}))
+        assert 2026 not in vals.get("ebit", {})
+
     def test_total_debt_treats_one_missing_side_as_zero(self):
         # Companies with no short-term debt simply don't report the tag.
         vals = build_values(make_result([2026], {"long_term_debt": {2026: 500.0}}))

@@ -7,6 +7,12 @@ never rendered in the statement tables (those render only the IS/BS/CF
 canonical lists).
 
 Missing-component conventions for derived sums, chosen once and documented:
+- ebit: operating_income when reported; otherwise pretax_income +
+  interest_expense (the textbook identity). ~21% of the S&P 500 never tag
+  OperatingIncomeLoss, and without the fallback EBIT, EBITDA, ROIC and the
+  coverage ratios would be blank for all of them. The income statement's
+  operating income ROW still shows "-" — the fallback fills the derived
+  analytic item only, never a line the company did not report.
 - total_debt: null only when BOTH short_term_debt and long_term_debt are
   unmapped; a single missing side counts as 0 (companies with no ST debt
   simply don't report the tag).
@@ -117,11 +123,25 @@ def _compute_derived(result: ParseResult) -> list[Derived]:
     # the averages of the oldest displayed year).
     for fy in result.fiscal_years:
         op, dna = get("operating_income", fy), get("d_and_a", fy)
-        put("ebit", fy, op, "operating_income")
-        # ebitda = operating income + D&A. An approximation: D&A from the
-        # cash flow statement can include amounts embedded in COGS.
-        put("ebitda", fy, None if op is None or dna is None else op + dna,
-            "operating_income+d_and_a (approximation)")
+        # EBIT is normally just operating income. About a fifth of the S&P 500
+        # never tags OperatingIncomeLoss (IBM among them), which would leave
+        # EBIT, EBITDA, ROIC and the coverage ratios blank for all of them, so
+        # fall back to the textbook identity: pretax income + interest expense.
+        # Note this fills the DERIVED item only — the operating income row on
+        # the income statement stays "-" rather than showing a number the
+        # company never reported.
+        pretax, interest = get("pretax_income", fy), get("interest_expense", fy)
+        if op is not None:
+            ebit, ebit_formula = op, "operating_income"
+        elif pretax is not None and interest is not None:
+            ebit, ebit_formula = pretax + interest, "pretax_income+interest_expense"
+        else:
+            ebit, ebit_formula = None, "operating_income"
+        put("ebit", fy, ebit, ebit_formula)
+        # ebitda = EBIT + D&A. An approximation: D&A from the cash flow
+        # statement can include amounts embedded in COGS.
+        put("ebitda", fy, None if ebit is None or dna is None else ebit + dna,
+            f"{ebit_formula}+d_and_a (approximation)")
 
         std, ltd = get("short_term_debt", fy), get("long_term_debt", fy)
         total_debt = None if std is None and ltd is None else (std or 0.0) + (ltd or 0.0)
@@ -136,7 +156,7 @@ def _compute_derived(result: ParseResult) -> list[Derived]:
         if tax is not None and pretax is not None and pretax > 0:
             etr = tax / pretax
         put("effective_tax_rate", fy, etr, "income_tax_expense/pretax_income", unit="ratio")
-        put("nopat", fy, None if op is None or etr is None else op * (1 - etr),
+        put("nopat", fy, None if ebit is None or etr is None else ebit * (1 - etr),
             "ebit*(1-effective_tax_rate)")
 
         equity = get("total_equity", fy)

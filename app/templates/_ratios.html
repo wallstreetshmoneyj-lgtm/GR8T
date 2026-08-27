@@ -31,7 +31,7 @@
       <td class="dim">{{ r.better_when }}</td>
       {% for cell in r.history %}
         <td class="num" {% if cell.value is none and cell.na_reason %}title="{{ cell.na_reason }}"{% endif %}>
-          {{ cell.display }}{% if loop.first and cell.value is none and cell.na_reason %}<div class="na-reason">{{ cell.na_reason }}</div>{% endif %}
+          {{ cell.display }}{% if cell.show_reason %}<div class="na-reason">{{ cell.na_reason }}</div>{% endif %}
         </td>
       {% else %}
         <td class="num dim" colspan="{{ ratios.years | length if ratios.years else 1 }}">no data</td>
