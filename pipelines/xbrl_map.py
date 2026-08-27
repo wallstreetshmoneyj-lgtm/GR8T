@@ -72,7 +72,10 @@ BALANCE_SHEET_ITEMS: list[tuple[str, list[str]]] = [
     ("short_term_debt", ["DebtCurrent", "LongTermDebtCurrent", "NotesPayableCurrent",
                          "ShortTermBorrowings"]),  # special combine rule, see below
     ("current_liabilities", ["LiabilitiesCurrent"]),
-    ("long_term_debt", ["LongTermDebtNoncurrent", "LongTermDebt"]),
+    # LongTermNotesPayable appended beyond the SPEC chain: Oracle (and others
+    # that label the line "notes payable, non-current") report it instead of
+    # LongTermDebtNoncurrent; without it total_debt silently loses ~$90B+.
+    ("long_term_debt", ["LongTermDebtNoncurrent", "LongTermDebt", "LongTermNotesPayable"]),
     ("total_liabilities", ["Liabilities"]),
     ("total_equity", ["StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
                       "StockholdersEquity"]),
@@ -88,8 +91,9 @@ CASH_FLOW_ITEMS: list[tuple[str, list[str]]] = [
     ("cfi", ["NetCashProvidedByUsedInInvestingActivities"]),
     ("dividends_paid", ["PaymentsOfDividends", "PaymentsOfDividendsCommonStock"]),
     ("buybacks", ["PaymentsForRepurchaseOfCommonStock"]),
-    ("debt_issued", ["ProceedsFromIssuanceOfLongTermDebt"]),
-    ("debt_repaid", ["RepaymentsOfLongTermDebt"]),
+    # Senior/plain variants appended beyond the SPEC chains (Oracle uses them).
+    ("debt_issued", ["ProceedsFromIssuanceOfLongTermDebt", "ProceedsFromIssuanceOfSeniorLongTermDebt"]),
+    ("debt_repaid", ["RepaymentsOfLongTermDebt", "RepaymentsOfDebt"]),
     ("cff", ["NetCashProvidedByUsedInFinancingActivities"]),
 ]
 
@@ -260,6 +264,7 @@ def parse_companyfacts(facts_json: dict) -> ParseResult:
             selected[item] = chosen
 
     _apply_gross_profit_fallback(selected, stored_years)
+    _apply_computed_fallbacks(gaap, calendar, selected, stored_years)
 
     facts: list[MappedFact] = []
     missing: list[str] = []
@@ -285,18 +290,31 @@ def parse_companyfacts(facts_json: dict) -> ParseResult:
 
 def _first_in_chain(per_tag: dict[str, dict[int, dict]], chain: list[str],
                     fy: int) -> tuple[dict, str] | None:
+    """First tag in the chain with a value for this year — preferring the
+    first NON-ZERO value, then falling back to a zero if that's all there is.
+
+    Why: some filers leave a stray 0-valued fact on a high-priority tag while
+    the real balance sits on a later tag (seen in the wild: Oracle's FY2022
+    10-K tags LongTermDebt=0 next to LongTermNotesPayable=$72.1B). A genuine
+    zero is still kept when no tag in the chain has a non-zero value."""
+    fallback: tuple[dict, str] | None = None
     for tag in chain:
         fact = per_tag.get(tag, {}).get(fy)
-        if fact is not None:
+        if fact is None:
+            continue
+        if float(fact["val"]) != 0.0:
             return (fact, tag)
-    return None
+        if fallback is None:
+            fallback = (fact, tag)
+    return fallback
 
 
 def _pick_short_term_debt(per_tag: dict[str, dict[int, dict]], fy: int) -> tuple[dict, str] | None:
     """SPEC rule: DebtCurrent first; when absent and BOTH LongTermDebtCurrent
-    and ShortTermBorrowings exist, sum them; otherwise fall through the chain."""
+    and ShortTermBorrowings exist, sum them; otherwise fall through the chain
+    (with the same non-zero preference as _first_in_chain)."""
     debt_current = per_tag.get("DebtCurrent", {}).get(fy)
-    if debt_current is not None:
+    if debt_current is not None and float(debt_current["val"]) != 0.0:
         return (debt_current, "DebtCurrent")
     ltdc = per_tag.get("LongTermDebtCurrent", {}).get(fy)
     stb = per_tag.get("ShortTermBorrowings", {}).get(fy)
@@ -307,11 +325,63 @@ def _pick_short_term_debt(per_tag: dict[str, dict[int, dict]], fy: int) -> tuple
         if _parse_date(stb.get("filed")) > _parse_date(ltdc.get("filed")):
             combined["filed"] = stb.get("filed")
         return (combined, "LongTermDebtCurrent+ShortTermBorrowings")
-    for tag in ["LongTermDebtCurrent", "NotesPayableCurrent", "ShortTermBorrowings"]:
-        fact = per_tag.get(tag, {}).get(fy)
-        if fact is not None:
-            return (fact, tag)
-    return None
+    picked = _first_in_chain(
+        per_tag, ["LongTermDebtCurrent", "NotesPayableCurrent", "ShortTermBorrowings"], fy
+    )
+    if picked is not None:
+        return picked
+    return (debt_current, "DebtCurrent") if debt_current is not None else None
+
+
+def _apply_computed_fallbacks(gaap: dict, calendar: dict[dt.date, int],
+                              selected: dict[str, dict[int, tuple[dict, str]]],
+                              stored_years: list[int]) -> None:
+    """Computed fallbacks beyond the SPEC tag chains, applied only to years
+    the chains left empty (flagged as a spec extension; see coverage report):
+
+    - pretax_income: some filers (Oracle among them) stop tagging the total
+      and only tag the Domestic + Foreign components — sum them.
+    - d_and_a: some filers split Depreciation and AmortizationOfIntangible-
+      Assets into separate cash-flow lines — sum them (amortization counted
+      as 0 when the filer reports none).
+    """
+    pretax = selected.setdefault("pretax_income", {})
+    domestic = _collect_tag(gaap, "IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic",
+                            "USD", True, calendar)
+    foreign = _collect_tag(gaap, "IncomeLossFromContinuingOperationsBeforeIncomeTaxesForeign",
+                           "USD", True, calendar)
+    for fy in stored_years:
+        if fy in pretax or fy not in domestic or fy not in foreign:
+            continue
+        fact = dict(domestic[fy])
+        fact["val"] = float(domestic[fy]["val"]) + float(foreign[fy]["val"])
+        pretax[fy] = (fact, "computed:PretaxDomestic+PretaxForeign")
+
+    dna = selected.setdefault("d_and_a", {})
+    depreciation = _collect_tag(gaap, "Depreciation", "USD", True, calendar)
+    amortization = _collect_tag(gaap, "AmortizationOfIntangibleAssets", "USD", True, calendar)
+    for fy in stored_years:
+        if fy in dna or fy not in depreciation:
+            continue
+        fact = dict(depreciation[fy])
+        amort = float(amortization[fy]["val"]) if fy in amortization else 0.0
+        fact["val"] = float(depreciation[fy]["val"]) + amort
+        dna[fy] = (fact, "computed:Depreciation+AmortizationOfIntangibleAssets")
+
+    # total_liabilities = total_assets - total_equity (accounting identity;
+    # equity incl. noncontrolling interests). Some filers (Oracle) never tag
+    # the Liabilities total.
+    liabilities = selected.setdefault("total_liabilities", {})
+    for fy in stored_years:
+        if fy in liabilities:
+            continue
+        assets = selected.get("total_assets", {}).get(fy)
+        equity = selected.get("total_equity", {}).get(fy)
+        if assets is None or equity is None:
+            continue
+        fact = dict(assets[0])
+        fact["val"] = float(assets[0]["val"]) - float(equity[0]["val"])
+        liabilities[fy] = (fact, "computed:total_assets-total_equity")
 
 
 def _apply_gross_profit_fallback(selected: dict[str, dict[int, tuple[dict, str]]],
