@@ -109,6 +109,32 @@ ITEM_UNITS: dict[str, str] = {
     "shares_diluted": "shares",
 }
 
+# Human labels for statement rows (canonical item -> display text).
+ITEM_LABELS: dict[str, str] = {
+    "revenue": "Revenue", "cost_of_revenue": "Cost of revenue",
+    "gross_profit": "Gross profit", "rd_expense": "R&D expense",
+    "sga_expense": "SG&A expense", "operating_income": "Operating income",
+    "interest_expense": "Interest expense", "pretax_income": "Pretax income",
+    "income_tax_expense": "Income tax expense", "net_income": "Net income",
+    "eps_diluted": "Diluted EPS", "shares_diluted": "Diluted shares",
+    "cash": "Cash & equivalents", "st_investments": "Short-term investments",
+    "accounts_receivable": "Accounts receivable", "inventory": "Inventory",
+    "current_assets": "Total current assets", "ppe_net": "PP&E, net",
+    "goodwill": "Goodwill", "intangibles": "Intangibles, net",
+    "total_assets": "Total assets", "accounts_payable": "Accounts payable",
+    "deferred_revenue_current": "Deferred revenue (current)",
+    "short_term_debt": "Short-term debt", "current_liabilities": "Total current liabilities",
+    "long_term_debt": "Long-term debt", "total_liabilities": "Total liabilities",
+    "total_equity": "Total equity",
+    "cfo": "Cash from operations", "d_and_a": "Depreciation & amortization",
+    "stock_comp": "Stock-based compensation", "capex": "Capital expenditures",
+    "cfi": "Cash from investing", "dividends_paid": "Dividends paid",
+    "buybacks": "Share repurchases", "debt_issued": "Debt issued",
+    "debt_repaid": "Debt repaid", "cff": "Cash from financing",
+}
+
+STATEMENT_NAMES = {"IS": "Income Statement", "BS": "Balance Sheet", "CF": "Cash Flow Statement"}
+
 # Duration (flow) statements vs instant (balance) facts.
 DURATION_STATEMENTS = {"IS", "CF"}
 

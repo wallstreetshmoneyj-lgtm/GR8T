@@ -1,0 +1,35 @@
+{% if not financials.loaded %}
+<p class="dim">No statement data yet. The initial data load runs in the background on first start
+(check <a href="/status">/status</a>), or run <code>make refresh</code>.</p>
+{% else %}
+{% for stmt in financials.statements %}
+<section class="statement">
+  <h2>{{ stmt.name }}</h2>
+  <table class="data-table statements">
+    <thead>
+      <tr>
+        <th class="item-col">$M</th>
+        {% for fy in financials.years %}
+          <th class="num" title="period end {{ financials.period_ends.get(fy, '-') }}">FY{{ fy }}</th>
+          {% if not loop.last %}<th class="num pct-col">%ch</th>{% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in stmt.rows %}
+      <tr>
+        <td class="item-col">{{ row.label }}</td>
+        {% for cell in row.cells %}
+          {% if cell.kind == "value" %}
+            <td class="num" {% if cell.tooltip %}title="{{ cell.tooltip }}"{% endif %}>{{ cell.display }}</td>
+          {% else %}
+            <td class="num pct-col {{ 'neg' if cell.value is not none and cell.value < 0 }}">{{ cell.display }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endfor %}
+{% endif %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Research Terminal{% endblock %}
+{% block content %}
+<section class="search-section">
+  <input id="search-box" type="text" placeholder="ticker or company name…"
+         autocomplete="off" autofocus>
+  <ul id="search-results" class="search-results" hidden></ul>
+</section>
+
+<section>
+  <h2>Sectors</h2>
+  <table class="data-table">
+    <thead><tr><th>GICS sector</th><th class="num">companies</th></tr></thead>
+    <tbody>
+      {% for s in sectors %}
+      <tr>
+        <td><a href="/sector/{{ s.name | urlencode }}">{{ s.name }}</a></td>
+        <td class="num">{{ s.count }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="2">No companies yet — run <code>make seed</code> or start the app once with network access.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

@@ -1,0 +1,509 @@
+# Ratio content file (SPEC 10.3). The owner writes every description
+# himself — TODO(owner) renders as "description coming soon."
+# display_name/formula_display/better_when here override the code defaults,
+# so wording can be tuned without touching Python.
+
+- key: current_ratio
+  display_name: "Current Ratio"
+  category: "Liquidity"
+  formula_display: "current assets / current liabilities"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: quick_ratio
+  display_name: "Quick Ratio"
+  category: "Liquidity"
+  formula_display: "(current assets - inventory) / current liabilities"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: cash_ratio
+  display_name: "Cash Ratio"
+  category: "Liquidity"
+  formula_display: "(cash + short-term investments) / current liabilities"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: ocf_ratio
+  display_name: "Operating Cash Flow Ratio"
+  category: "Liquidity"
+  formula_display: "cash from operations / current liabilities"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: working_capital
+  display_name: "Working Capital"
+  category: "Liquidity"
+  formula_display: "current assets - current liabilities"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: asset_turnover
+  display_name: "Asset Turnover"
+  category: "Activity"
+  formula_display: "revenue / average total assets"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: fixed_asset_turnover
+  display_name: "Fixed Asset Turnover"
+  category: "Activity"
+  formula_display: "revenue / average net PP&E"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: inventory_turnover
+  display_name: "Inventory Turnover"
+  category: "Activity"
+  formula_display: "cost of revenue / average inventory"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: dio
+  display_name: "Days Inventory Outstanding"
+  category: "Activity"
+  formula_display: "365 / inventory turnover"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: receivables_turnover
+  display_name: "Receivables Turnover"
+  category: "Activity"
+  formula_display: "revenue / average accounts receivable"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: dso
+  display_name: "Days Sales Outstanding"
+  category: "Activity"
+  formula_display: "365 / receivables turnover"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: payables_turnover
+  display_name: "Payables Turnover"
+  category: "Activity"
+  formula_display: "cost of revenue / average accounts payable"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: dpo
+  display_name: "Days Payables Outstanding"
+  category: "Activity"
+  formula_display: "365 / payables turnover"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: ccc
+  display_name: "Cash Conversion Cycle"
+  category: "Activity"
+  formula_display: "DIO + DSO - DPO"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: gross_margin
+  display_name: "Gross Margin"
+  category: "Profitability"
+  formula_display: "gross profit / revenue"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: operating_margin
+  display_name: "Operating Margin"
+  category: "Profitability"
+  formula_display: "operating income / revenue"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: ebitda_margin
+  display_name: "EBITDA Margin"
+  category: "Profitability"
+  formula_display: "EBITDA / revenue"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: pretax_margin
+  display_name: "Pretax Margin"
+  category: "Profitability"
+  formula_display: "pretax income / revenue"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: net_margin
+  display_name: "Net Margin"
+  category: "Profitability"
+  formula_display: "net income / revenue"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: fcf_margin
+  display_name: "FCF Margin"
+  category: "Profitability"
+  formula_display: "free cash flow / revenue"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: roa
+  display_name: "Return on Assets"
+  category: "Profitability"
+  formula_display: "net income / average total assets"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: roe
+  display_name: "Return on Equity"
+  category: "Profitability"
+  formula_display: "net income / average equity"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: roic
+  display_name: "Return on Invested Capital"
+  category: "Profitability"
+  formula_display: "NOPAT / average invested capital"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: tax_burden
+  display_name: "Tax Burden"
+  category: "DuPont"
+  formula_display: "net income / pretax income"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: interest_burden
+  display_name: "Interest Burden"
+  category: "DuPont"
+  formula_display: "pretax income / EBIT"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: equity_multiplier
+  display_name: "Equity Multiplier"
+  category: "DuPont"
+  formula_display: "average assets / average equity"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: debt_to_equity
+  display_name: "Debt / Equity"
+  category: "Leverage"
+  formula_display: "total debt / total equity"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: debt_to_assets
+  display_name: "Debt / Assets"
+  category: "Leverage"
+  formula_display: "total debt / total assets"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: net_debt_to_ebitda
+  display_name: "Net Debt / EBITDA"
+  category: "Leverage"
+  formula_display: "net debt / EBITDA"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: interest_coverage
+  display_name: "Interest Coverage"
+  category: "Leverage"
+  formula_display: "EBIT / interest expense"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: ebitda_coverage
+  display_name: "EBITDA Coverage"
+  category: "Leverage"
+  formula_display: "EBITDA / interest expense"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: capex_to_sales
+  display_name: "Capex / Sales"
+  category: "Cash Flow"
+  formula_display: "capex / revenue"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: capex_to_da
+  display_name: "Capex / D&A"
+  category: "Cash Flow"
+  formula_display: "capex / depreciation & amortization"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: accruals_ratio
+  display_name: "Accruals Ratio"
+  category: "Cash Flow"
+  formula_display: "(net income - CFO) / average assets"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: cash_conversion
+  display_name: "Cash Conversion"
+  category: "Cash Flow"
+  formula_display: "CFO / net income"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: payout_ratio
+  display_name: "Payout Ratio"
+  category: "Shareholder Return"
+  formula_display: "dividends paid / net income"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: retention
+  display_name: "Retention Ratio"
+  category: "Shareholder Return"
+  formula_display: "1 - payout ratio"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: sgr
+  display_name: "Sustainable Growth Rate"
+  category: "Shareholder Return"
+  formula_display: "ROE x retention"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: dividend_coverage
+  display_name: "Dividend Coverage"
+  category: "Shareholder Return"
+  formula_display: "free cash flow / dividends paid"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: bvps
+  display_name: "Book Value / Share"
+  category: "Per Share"
+  formula_display: "total equity / diluted shares"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: revenue_per_share
+  display_name: "Revenue / Share"
+  category: "Per Share"
+  formula_display: "revenue / diluted shares"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: fcf_per_share
+  display_name: "FCF / Share"
+  category: "Per Share"
+  formula_display: "free cash flow / diluted shares"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: revenue_yoy
+  display_name: "Revenue Growth YoY"
+  category: "Growth"
+  formula_display: "(revenue - prior revenue) / |prior revenue|"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: ni_yoy
+  display_name: "Net Income Growth YoY"
+  category: "Growth"
+  formula_display: "(net income - prior) / |prior|"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: revenue_cagr_5y
+  display_name: "Revenue CAGR (5y)"
+  category: "Growth"
+  formula_display: "(revenue / revenue 4 FYs ago)^(1/4) - 1"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: rule_of_40
+  display_name: "Rule of 40 (SaaS-oriented)"
+  category: "Growth"
+  formula_display: "revenue growth YoY + FCF margin"
+  better_when: higher
+  description: TODO(owner)
+  caveats:
+    - "SaaS-oriented heuristic; not meaningful for most non-software businesses."
+
+- key: market_cap
+  display_name: "Market Cap"
+  category: "Valuation-Equity"
+  formula_display: "price x diluted shares"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: pe
+  display_name: "P/E"
+  category: "Valuation-Equity"
+  formula_display: "price / diluted EPS"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: ps
+  display_name: "P/S"
+  category: "Valuation-Equity"
+  formula_display: "market cap / revenue"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: pb
+  display_name: "P/B"
+  category: "Valuation-Equity"
+  formula_display: "market cap / total equity"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: p_fcf
+  display_name: "P/FCF"
+  category: "Valuation-Equity"
+  formula_display: "market cap / free cash flow"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: earnings_yield
+  display_name: "Earnings Yield"
+  category: "Valuation-Equity"
+  formula_display: "diluted EPS / price"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: fcf_yield
+  display_name: "FCF Yield"
+  category: "Valuation-Equity"
+  formula_display: "free cash flow / market cap"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: peg
+  display_name: "PEG"
+  category: "Valuation-Equity"
+  formula_display: "P/E / (net income growth x 100)"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: ev
+  display_name: "Enterprise Value"
+  category: "Valuation-Enterprise"
+  formula_display: "market cap + total debt - cash - short-term investments"
+  better_when: depends
+  description: TODO(owner)
+  caveats: []
+
+- key: ev_ebitda
+  display_name: "EV / EBITDA"
+  category: "Valuation-Enterprise"
+  formula_display: "EV / EBITDA"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: ev_ebit
+  display_name: "EV / EBIT"
+  category: "Valuation-Enterprise"
+  formula_display: "EV / EBIT"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: ev_sales
+  display_name: "EV / Sales"
+  category: "Valuation-Enterprise"
+  formula_display: "EV / revenue"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: ev_fcf
+  display_name: "EV / FCF"
+  category: "Valuation-Enterprise"
+  formula_display: "EV / free cash flow"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: ev_ic
+  display_name: "EV / Invested Capital"
+  category: "Valuation-Enterprise"
+  formula_display: "EV / invested capital"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: ev_ebitda_less_capex
+  display_name: "EV / (EBITDA - Capex)"
+  category: "Valuation-Enterprise"
+  formula_display: "EV / (EBITDA - capex)"
+  better_when: lower
+  description: TODO(owner)
+  caveats: []
+
+- key: buyback_yield
+  display_name: "Buyback Yield"
+  category: "Shareholder Return"
+  formula_display: "buybacks / market cap"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []
+
+- key: shareholder_yield
+  display_name: "Shareholder Yield"
+  category: "Shareholder Return"
+  formula_display: "(dividends + buybacks) / market cap"
+  better_when: higher
+  description: TODO(owner)
+  caveats: []

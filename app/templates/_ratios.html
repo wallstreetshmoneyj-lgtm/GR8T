@@ -1,0 +1,44 @@
+{% if not ratios.loaded %}
+<p class="dim">No ratio data yet — statements load first (see <a href="/status">/status</a>).</p>
+{% endif %}
+{% if not ratios.selected %}
+<div class="category-grid">
+  {% for cat in ratios.categories %}
+    {% if cat.market_only %}
+      <span class="category-card dim" title="Needs price data — Phase 2">{{ cat.name }} <small>(Phase 2)</small></span>
+    {% else %}
+      <a class="category-card" href="/company/{{ header.ticker }}?tab=ratios&category={{ cat.name | urlencode }}">
+        {{ cat.name }} <small>({{ cat.count }})</small></a>
+    {% endif %}
+  {% endfor %}
+</div>
+{% else %}
+<p class="breadcrumb"><a href="/company/{{ header.ticker }}?tab=ratios">ratio categories</a> / {{ ratios.selected }}</p>
+{% for cat in ratios.categories %}{% if cat.name == ratios.selected %}
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>ratio</th><th>formula</th><th>better when</th>
+      {% for fy in ratios.years %}<th class="num">FY{{ fy }}</th>{% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in cat.ratios %}
+    <tr>
+      <td><a href="/company/{{ header.ticker }}/ratio/{{ r.key }}" title="comps view">{{ r.display_name }}</a>
+        {% if r.market_data %}<small class="dim">(Phase 2)</small>{% endif %}</td>
+      <td class="dim formula">{{ r.formula }}</td>
+      <td class="dim">{{ r.better_when }}</td>
+      {% for cell in r.history %}
+        <td class="num" {% if cell.value is none and cell.na_reason %}title="{{ cell.na_reason }}"{% endif %}>
+          {{ cell.display }}{% if loop.first and cell.value is none and cell.na_reason %}<div class="na-reason">{{ cell.na_reason }}</div>{% endif %}
+        </td>
+      {% else %}
+        <td class="num dim" colspan="{{ ratios.years | length if ratios.years else 1 }}">no data</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}{% endfor %}
+{% endif %}

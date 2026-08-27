@@ -1,0 +1,21 @@
+<p class="chips">
+  {% for chip in filings.chips %}
+    <a class="chip {{ 'active' if filings.selected_form == chip.form }}"
+       href="/company/{{ header.ticker }}?tab=filings{% if chip.form %}&form={{ chip.form | urlencode }}{% endif %}">{{ chip.label }}</a>
+  {% endfor %}
+</p>
+<table class="data-table">
+  <thead><tr><th>form</th><th>filed</th><th>period</th><th>document</th></tr></thead>
+  <tbody>
+    {% for f in filings.filings %}
+    <tr>
+      <td>{{ f.form }}</td>
+      <td>{{ f.filed_date }}</td>
+      <td>{{ f.period_of_report }}</td>
+      <td>{% if f.url %}<a href="{{ f.url }}" target="_blank" rel="noopener">view on EDGAR</a>{% else %}-{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="dim">No filings loaded yet (see <a href="/status">/status</a>).</td></tr>
+    {% endfor %}
+  </tbody>
+</table>

@@ -1,0 +1,6 @@
+# Damodaran (NYU Stern) industry dataset links, shown on company pages with
+# attribution (SPEC 6/16 — link out only). The default points at the current
+# data index; refine per GICS sector/sub-industry over time by adding entries
+# under `sectors:` (sector name -> URL).
+default: "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html"
+sectors: {}

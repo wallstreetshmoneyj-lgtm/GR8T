@@ -1,0 +1,25 @@
+<div class="notes" data-ticker="{{ header.ticker }}">
+  <p>
+    <button id="new-note-btn" type="button">+ new note</button>
+    <span class="dim">autosaves ~2s after you stop typing; notes persist until you delete them.</span>
+  </p>
+  <div id="notes-list">
+    {% for note in notes %}
+    <article class="note" data-note-id="{{ note.id }}">
+      <header class="note-meta dim">
+        created {{ note.created_at }} · updated <span class="note-updated">{{ note.updated_at }}</span>
+        · <span class="note-status"></span>
+        <span class="note-actions">
+          <button type="button" class="note-edit">edit</button>
+          <button type="button" class="note-save" hidden>save</button>
+          <button type="button" class="note-delete">delete</button>
+        </span>
+      </header>
+      <div class="note-rendered">{{ note.html | safe }}</div>
+      <textarea class="note-editor" hidden>{{ note.content }}</textarea>
+    </article>
+    {% else %}
+    <p class="dim" id="no-notes-msg">No notes for {{ header.ticker }} yet.</p>
+    {% endfor %}
+  </div>
+</div>

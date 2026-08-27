@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Status — Research Terminal{% endblock %}
+{% block content %}
+<h1>Status</h1>
+<p class="dim">
+  companies: {{ status.counts.companies }} ·
+  statement facts: {{ status.counts.statement_facts }} ·
+  ratios: {{ status.counts.ratios }} ·
+  filings: {{ status.counts.filings }} ·
+  notes: {{ status.counts.notes }}
+</p>
+
+<h2>Jobs (latest run each)</h2>
+<table class="data-table">
+  <thead><tr><th>job</th><th>started</th><th>finished</th><th>status</th><th>message</th></tr></thead>
+  <tbody>
+    {% for j in status.jobs %}
+    <tr>
+      <td>{{ j.job_name }}</td>
+      <td>{{ j.started_at }}</td>
+      <td>{{ j.finished_at or "-" }}</td>
+      <td class="{{ 'status-ok' if j.status == 'ok' else ('status-err' if j.status == 'error') }}">{{ j.status }}</td>
+      <td class="dim"><pre class="msg">{{ j.message or "" }}</pre></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="dim">No job runs recorded yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Recent runs</h2>
+<table class="data-table">
+  <thead><tr><th>job</th><th>started</th><th>status</th></tr></thead>
+  <tbody>
+    {% for j in status.recent_runs %}
+    <tr><td>{{ j.job_name }}</td><td>{{ j.started_at }}</td><td>{{ j.status }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

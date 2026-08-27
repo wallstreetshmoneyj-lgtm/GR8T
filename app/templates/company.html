@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ header.ticker }} — {{ header.name }}{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="/">home</a> /
+  <a href="/sector/{{ header.sector | urlencode }}">{{ header.sector }}</a> / {{ header.ticker }}</p>
+
+<div class="company-header">
+  <div>
+    <h1>{{ header.name }} <span class="ticker-badge">{{ header.ticker }}</span>
+      {% if not header.active %}<span class="inactive-badge" title="No longer in the seed universe; data and notes remain readable.">inactive</span>{% endif %}
+    </h1>
+    <p class="dim">{{ header.sector }} / {{ header.sub_industry }}</p>
+  </div>
+  <div class="header-right dim">
+    <span title="Delayed price arrives in Phase 2">price: —</span>
+  </div>
+</div>
+
+<p class="description dim">
+  {{ header.name }} — {{ header.sub_industry }} company in the {{ header.sector }} sector.
+  <em>(Full description arrives in Phase 5.)</em>
+</p>
+
+{% if header.peers %}
+<p class="peers-row">comps:
+  {% for p in header.peers %}<a href="/company/{{ p }}">{{ p }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+</p>
+{% endif %}
+
+<p class="links-row">
+  {% if header.latest_10k and header.latest_10k.url %}
+    <a href="{{ header.latest_10k.url }}" target="_blank" rel="noopener">Latest 10-K ({{ header.latest_10k.filed_date }})</a>
+  {% else %}<span class="dim">Latest 10-K: -</span>{% endif %}
+  |
+  {% if header.prior_10k and header.prior_10k.url %}
+    <a href="{{ header.prior_10k.url }}" target="_blank" rel="noopener">Prior 10-K ({{ header.prior_10k.filed_date }})</a>
+  {% else %}<span class="dim">Prior 10-K: -</span>{% endif %}
+  |
+  {% if header.ir_url %}<a href="{{ header.ir_url }}" target="_blank" rel="noopener">Investor Relations</a> |{% endif %}
+  <a href="/company/{{ header.ticker }}?tab=filings">All filings</a>
+  |
+  <a href="{{ header.damodaran_url }}" target="_blank" rel="noopener"
+     title="{{ header.damodaran_attribution }}">Damodaran industry data</a>
+</p>
+
+<nav class="tabs">
+  {% for t in ["financials", "ratios", "news", "filings", "notes"] %}
+    <a class="{{ 'active' if tab == t }}" href="/company/{{ header.ticker }}?tab={{ t }}">
+      {{ t }}{% if t == "notes" and header.notes_count %} <span class="badge">{{ header.notes_count }}</span>{% endif %}
+    </a>
+  {% endfor %}
+</nav>
+
+{% if tab == "financials" %}{% include "_financials.html" %}
+{% elif tab == "ratios" %}{% include "_ratios.html" %}
+{% elif tab == "news" %}{% include "_news.html" %}
+{% elif tab == "filings" %}{% include "_filings.html" %}
+{% elif tab == "notes" %}{% include "_notes.html" %}
+{% endif %}
+{% endblock %}
+{% block footer_extra %}
+  {% if header.data_as_of %}<span class="dim">| statement data as of {{ header.data_as_of }} UTC</span>{% endif %}
+{% endblock %}

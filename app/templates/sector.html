@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ sector }} — Research Terminal{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="/">home</a> / {{ sector }}</p>
+<h1>{{ sector }}</h1>
+<table class="data-table">
+  <thead><tr><th>ticker</th><th>company</th><th>sub-industry</th></tr></thead>
+  <tbody>
+    {% for c in companies %}
+    <tr>
+      <td><a href="/company/{{ c.ticker }}">{{ c.ticker }}</a></td>
+      <td><a href="/company/{{ c.ticker }}">{{ c.name }}</a></td>
+      <td class="dim">{{ c.sub_industry }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3">No companies in this sector.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

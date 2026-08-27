@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ comps.ratio.display_name }} — {{ header.ticker }} comps{% endblock %}
+{% block content %}
+<p class="breadcrumb">
+  <a href="/">home</a> / <a href="/company/{{ header.ticker }}">{{ header.ticker }}</a> /
+  <a href="/company/{{ header.ticker }}?tab=ratios&category={{ comps.ratio.category | urlencode }}">{{ comps.ratio.category }}</a> /
+  {{ comps.ratio.display_name }}
+</p>
+<h1>{{ comps.ratio.display_name }} <span class="dim">— comps for {{ header.ticker }}</span></h1>
+<p><span class="formula">{{ comps.ratio.formula }}</span> · generally better when <b>{{ comps.ratio.better_when }}</b></p>
+<p class="description">
+  {% if comps.ratio.description %}{{ comps.ratio.description }}{% else %}<span class="dim">description coming soon.</span>{% endif %}
+</p>
+{% if comps.ratio.caveats %}
+<ul class="caveats dim">
+  {% for c in comps.ratio.caveats %}<li>{{ c }}</li>{% endfor %}
+</ul>
+{% endif %}
+{% if comps.ratio.market_data %}
+<p class="dim">This is a market-data ratio — values arrive with prices in Phase 2.</p>
+{% endif %}
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>company</th><th class="num">latest FY</th>
+      <th class="num">FY-1</th><th class="num">FY-2</th><th class="num">FY-3</th><th class="num">FY-4</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in comps.rows %}
+    <tr class="{{ 'self-row' if loop.first }}">
+      <td>
+        {% if row.in_universe %}<a href="/company/{{ row.ticker }}">{{ row.ticker }}</a>
+          <span class="dim">{{ row.name }}</span>
+        {% else %}{{ row.ticker }} <span class="dim">(not in universe)</span>{% endif %}
+      </td>
+      {% for cell in row.history %}
+        <td class="num" title="FY{{ cell.fy }}{% if cell.na_reason %} — {{ cell.na_reason }}{% endif %}">
+          {{ cell.display }}<div class="dim tiny">FY{{ cell.fy }}</div>
+        </td>
+      {% endfor %}
+      {% for _ in range(5 - (row.history | length)) %}<td class="num dim">-</td>{% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
