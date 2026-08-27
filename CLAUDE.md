@@ -30,6 +30,7 @@ a background thread. Watch `/status` while it loads.
 |---|---|
 | `make refresh` | Full manual refresh: filings + statements + ratios + coverage report |
 | `python -m pipelines.run statements --tickers ORCL,MSFT` | Refresh named companies only |
+| `python -m pipelines.run statements --from-cache` | Re-parse cached responses, no SEC requests |
 | `make coverage` | Print the tag-mapping coverage summary |
 | `make seed-peers` | Regenerate peers (writes `peers.candidate.json` if one exists) |
 | `make refresh-universe` | Regenerate a candidate `sp500.csv` + diff, never overwrites |
@@ -40,6 +41,12 @@ a background thread. Watch `/status` while it loads.
 **`data/terminal.db`** — the SQLite file. It holds your research notes, which are
 the only irreplaceable thing here (everything else re-fetches from SEC). Also
 available: `GET /api/notes/export` returns all notes as one markdown file.
+
+Disk: a fully loaded universe is roughly **500MB of database** (most of it the
+complete EDGAR filing history — 1.8M rows, mostly Form 4s) plus **~2GB of raw
+response cache**. The cache is disposable: `rm -rf data/cache` frees it, at the
+cost of re-fetching on the next refresh. Fixed a parser bug instead? Use
+`--from-cache` to re-parse everything without touching SEC.
 
 ## Data-source rules
 
@@ -88,7 +95,24 @@ high-priority tag while the real balance sits on a later one (Oracle's FY2022
 **Some filers never tag the total.** `_apply_computed_fallbacks` derives pretax
 income from Domestic+Foreign, D&A from Depreciation+Amortization, and total
 liabilities from assets−equity. These are marked `computed:` in `xbrl_tag_used`
-and visible in each cell's tooltip.
+and visible in each cell's tooltip. Separately, about a fifth of the index never
+tags `OperatingIncomeLoss` (IBM among them), so the derived `ebit` falls back to
+pretax income + interest expense — the derived item only; the operating income
+*row* stays "-" rather than showing a number the company never reported.
+
+**Where a number would mislead, prefer n/a.** Commercial banks tag gross interest
+income, not comparable to revenue elsewhere in the table, so it is deliberately
+unmapped: an honest "n/a" with a reason beats a number that wrecks a comparison.
+
+**Coverage today:** 6.2% of core-item cells missing across the 500 companies
+(target < 10%), zero fetch/parse errors. `make coverage` re-prints it;
+`data/reports/xbrl_coverage.csv` lists every unmapped (company, item) pair. Some
+misses are facts, not bugs — XOM, PSKY and HONA file under brand-new CIKs after
+2025-26 reorganizations and have no 10-K history yet.
+
+**Dual share classes share one CIK.** `companies` is keyed by cik, so GOOG/GOOGL,
+FOX/FOXA and NWS/NWSA get one row each; `universe.ticker_aliases()` resolves the
+other ticker to it, so both URLs work.
 
 **Notes are sacred.** No job, refresh, or migration may modify or delete rows in
 the `notes` table. Pipelines never import `Note`. The only deletion path is the

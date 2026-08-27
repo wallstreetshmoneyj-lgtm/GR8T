@@ -58,6 +58,24 @@ class TestPagesRenderWithoutData:
     def test_unknown_ticker_is_404_not_500(self, client):
         assert client.get("/company/NOPE").status_code == 404
 
+    def test_second_share_class_resolves_to_the_same_company(self, client, db):
+        """GOOG/GOOGL, FOX/FOXA and NWS/NWSA each share one CIK, so only one
+        ticker owns the companies row — the other must still resolve, not 404.
+        The alias comes from the real seed file, which lists both tickers."""
+        from core.db import Company
+
+        with db() as session:
+            session.add(Company(cik="0001652044", ticker="GOOGL", name="Alphabet Inc.",
+                                gics_sector="Communication Services",
+                                gics_sub_industry="Interactive Media & Services"))
+            session.commit()
+
+        assert client.get("/company/GOOGL").status_code == 200
+        resp = client.get("/company/GOOG")  # the class-C ticker
+        assert resp.status_code == 200
+        assert "Alphabet" in resp.text
+        assert client.get("/api/company/GOOG").json()["ticker"] == "GOOGL"
+
     def test_unknown_ratio_is_404_not_500(self, client):
         assert client.get("/company/ORCL/ratio/not_a_ratio").status_code == 404
 

@@ -69,6 +69,33 @@ def load_universe(session: Session, csv_path: Path = SP500_CSV) -> dict:
     return {"added": added, "updated": updated, "deactivated": deactivated}
 
 
+_ticker_aliases: dict[str, str] | None = None
+_ticker_aliases_mtime: float | None = None
+
+
+def ticker_aliases(csv_path: Path = SP500_CSV) -> dict[str, str]:
+    """Share-class ticker -> the CIK it belongs to.
+
+    companies is keyed by cik (SPEC 7), so a company with two share classes
+    in the index (GOOG/GOOGL, FOX/FOXA, NWS/NWSA) gets ONE row and one of the
+    tickers loses the race. Their financials are identical, so rather than
+    duplicating rows we keep this map from the seed file and let the site
+    resolve the other ticker to the same company. Re-read when the seed file
+    changes.
+    """
+    global _ticker_aliases, _ticker_aliases_mtime
+    mtime = csv_path.stat().st_mtime if csv_path.exists() else None
+    if _ticker_aliases is None or mtime != _ticker_aliases_mtime:
+        aliases: dict[str, str] = {}
+        if csv_path.exists():
+            with open(csv_path, newline="") as f:
+                for row in csv.DictReader(f):
+                    aliases[row["ticker"].strip().upper()] = row["cik"].strip().zfill(10)
+        _ticker_aliases = aliases
+        _ticker_aliases_mtime = mtime
+    return _ticker_aliases
+
+
 def load_peers() -> dict[str, list[str]]:
     if not PEERS_JSON.exists():
         return {}

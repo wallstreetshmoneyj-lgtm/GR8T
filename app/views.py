@@ -117,9 +117,16 @@ def sector_companies(session: Session, sector: str) -> list[dict]:
 # ---------- company page ----------
 
 def get_company(session: Session, ticker: str) -> Company | None:
-    return session.execute(
+    """Resolve a ticker to its company, including the second share class of a
+    dual-listed company (GOOG -> the GOOGL row; they share a CIK and their
+    financials are identical)."""
+    company = session.execute(
         select(Company).where(func.upper(Company.ticker) == ticker.upper())
     ).scalar()
+    if company is not None:
+        return company
+    cik = universe.ticker_aliases().get(ticker.upper())
+    return session.get(Company, cik) if cik else None
 
 
 def company_header(session: Session, company: Company) -> dict:
