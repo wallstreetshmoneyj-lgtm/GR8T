@@ -28,20 +28,39 @@ _DAMODARAN_DEFAULT = "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacu
 FILING_FILTER_CHIPS = [("10-K", "10-K"), ("10-Q", "10-Q"), ("8-K", "8-K"),
                        ("DEF 14A", "DEF 14A"), ("Form 4", "4"), ("All", "")]
 
+# Owner-editable content files (module-level so they can be pointed elsewhere
+# in tests, the same way pipelines/universe.py handles its seed files).
+RATIOS_YML = settings.content_dir / "ratios.yml"
+DAMODARAN_YML = settings.content_dir / "damodaran.yml"
+
 
 # ---------- content files (read once per process; small and static) ----------
 
 _ratio_content: dict[str, dict] | None = None
+_ratio_content_mtime: float | None = None
 _damodaran_map: dict | None = None
 
 
 def ratio_content() -> dict[str, dict]:
-    """ratios.yml overlay: owner-editable descriptions/caveats per ratio key."""
-    global _ratio_content
-    if _ratio_content is None:
-        path = settings.content_dir / "ratios.yml"
-        entries = yaml.safe_load(path.read_text()) if path.exists() else []
-        _ratio_content = {e["key"]: e for e in (entries or []) if isinstance(e, dict) and "key" in e}
+    """ratios.yml overlay: owner-editable descriptions/caveats per ratio key.
+
+    Re-read whenever the file changes on disk. Writing these descriptions is
+    the owner's own ongoing task (SPEC 17.2), and having to restart the app
+    to see his own words would make that miserable.
+    """
+    global _ratio_content, _ratio_content_mtime
+    path = RATIOS_YML
+    mtime = path.stat().st_mtime if path.exists() else None
+    if _ratio_content is None or mtime != _ratio_content_mtime:
+        try:
+            entries = yaml.safe_load(path.read_text()) if path.exists() else []
+        except yaml.YAMLError:
+            # A typo mid-edit must not take every ratio page down; keep the
+            # last good copy (or none) and carry on.
+            return _ratio_content or {}
+        _ratio_content = {e["key"]: e for e in (entries or [])
+                          if isinstance(e, dict) and "key" in e}
+        _ratio_content_mtime = mtime
     return _ratio_content
 
 
@@ -50,8 +69,8 @@ def damodaran_url(company: Company) -> str:
     mapping in data/content/damodaran.yml over time."""
     global _damodaran_map
     if _damodaran_map is None:
-        path = settings.content_dir / "damodaran.yml"
-        _damodaran_map = yaml.safe_load(path.read_text()) if path.exists() else {}
+        _damodaran_map = (yaml.safe_load(DAMODARAN_YML.read_text())
+                          if DAMODARAN_YML.exists() else {})
     sectors = (_damodaran_map or {}).get("sectors", {})
     return sectors.get(company.gics_sector) or (_damodaran_map or {}).get("default", _DAMODARAN_DEFAULT)
 
