@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Env / secrets — keys live in .env only, never committed (Section 16)
+.env
+
+# Runtime data: the SQLite DB and raw API response cache are rebuildable
+# (except notes — back up data/terminal.db, see CLAUDE.md)
+data/terminal.db
+data/terminal.db-journal
+data/terminal.db-wal
+data/terminal.db-shm
+data/cache/
+data/reports/
