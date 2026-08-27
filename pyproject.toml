@@ -6,6 +6,7 @@ target-version = "py311"
 select = ["E", "F", "W", "I", "UP", "B"]
 ignore = [
     "E501", # long lines allowed in data tables (tag chains, ratio specs)
+    "B008", # `Depends(get_db)` in a default IS the FastAPI idiom, not a bug
 ]
 
 [tool.pytest.ini_options]

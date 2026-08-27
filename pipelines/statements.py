@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 from core.config import settings
 from core.db import Company, StatementFact
 from pipelines import edgar_client, ratios, xbrl_map
-from pipelines.xbrl_map import DISPLAY_YEARS, MappedFact, ParseResult
+from pipelines.xbrl_map import DISPLAY_YEARS, ParseResult
 
 log = logging.getLogger(__name__)
 
@@ -87,6 +87,17 @@ def _pivot(result: ParseResult) -> dict[str, dict[int, float]]:
     for fact in result.facts:
         out.setdefault(fact.item, {})[fact.fiscal_year] = fact.value
     return out
+
+
+def build_values(result: ParseResult) -> dict[str, dict[int, float]]:
+    """item -> fiscal_year -> value for mapped AND derived items, without
+    touching the database. This is exactly what the ratio engine consumes,
+    so tests can go straight from a companyfacts fixture to ratios."""
+    values = _pivot(result)
+    for d in _compute_derived(result):
+        if d.value is not None:
+            values.setdefault(d.item, {})[d.fiscal_year] = d.value
+    return values
 
 
 def _compute_derived(result: ParseResult) -> list[Derived]:

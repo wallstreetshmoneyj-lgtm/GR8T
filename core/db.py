@@ -226,14 +226,24 @@ class JobRun(Base):
 # safe, and SQLite handles cross-thread access fine in WAL-less default mode.
 _engine = None
 _SessionFactory = None
+_db_path_override = None  # set only by configure_for_tests
+
+
+def configure_for_tests(db_path) -> None:
+    """Point the engine at a throwaway database file. Tests only."""
+    global _engine, _SessionFactory, _db_path_override
+    _db_path_override = db_path
+    _engine = None
+    _SessionFactory = None
 
 
 def get_engine():
     global _engine
     if _engine is None:
-        settings.data_dir.mkdir(parents=True, exist_ok=True)
+        db_path = _db_path_override or settings.db_path
+        db_path.parent.mkdir(parents=True, exist_ok=True)
         _engine = create_engine(
-            f"sqlite:///{settings.db_path}",
+            f"sqlite:///{db_path}",
             connect_args={"check_same_thread": False},
         )
     return _engine
